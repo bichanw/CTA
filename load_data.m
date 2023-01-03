@@ -61,6 +61,7 @@ classdef load_data < handle
 			data = load_data.spike_ks(data_f,data);
 
 
+
 			% ----- video data -----
 			video_f = dir(sprintf('~/SpikeSorting/Codes/witten/mat/sleap/%s_*%s/*.h5',datestr(session,'yyyymmdd'),subject));
 			if ~isempty(video_f)
@@ -80,6 +81,9 @@ classdef load_data < handle
 			% save session info
 			data.session = session;
 			data.subject = subject;
+
+			% load amplitude
+			data.amp = load_data.spike_amp(data); 
 
 		end
 

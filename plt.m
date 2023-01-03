@@ -26,6 +26,17 @@ classdef plt < handle
 			% xlabel(ax,'time (s)');
 		end
 
+		function ax = ampimg(data,ii,ax)
+			% ii = 1;
+			% ax = np; scatter(ax,data.spikes{ii},data.amp{ii}); ef;
+
+			% ax = np; 
+			histogram2(ax,data.spikes{ii},data.amp{ii},'EdgeColor','none','DisplayStyle','tile','ShowEmptyBins','on');
+			colorbar(ax);
+			% ef;
+		
+		end
+
 		function ax = amp(data,ii,ax)
 			% parameters
 			max_2_plt = 500; % number of maximum spikes displayed
@@ -34,6 +45,7 @@ classdef plt < handle
 			% plot
 			scatter(ax,data.spikes{ii}(ind),data.amp{ii}(ind),'MarkerEdgeAlpha',0.1);
 		end
+
 
 		
 	end

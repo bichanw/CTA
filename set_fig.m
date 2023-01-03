@@ -4,7 +4,7 @@ classdef set_fig < handle
 
 	% by cell
 	methods (Static)
-		function ax = FR(data,ax)
+		function ax = FR(ax,data)
 			% last reward
 			if isfield(data,'rewards')
 				t_last_reward = max([data.rewards.all.rear(end) data.rewards.all.front(end)]);
@@ -14,6 +14,11 @@ classdef set_fig < handle
 			% figures setting
 			xlabel(ax,sprintf('\ntime (s)'));
 			ylabel(ax,'FR (Hz)');
+		end
+
+		function ax = ampimg(ax,varargin)
+			xlabel(ax,'time (s)');
+			ylabel(ax,'amplitude');
 		end
 
 		function ax = amp(ax)
@@ -30,8 +35,8 @@ classdef set_fig < handle
 	methods	(Static)
 
 
-		function ax = FR_amp(data,ax)
-			yyaxis(ax,'left'); set_fig.FR(data,ax);
+		function ax = FR_amp(ax,data)
+			yyaxis(ax,'left'); set_fig.FR(ax,data);
 			yyaxis(ax,'right'); set_fig.amp(ax);
 		end
 
