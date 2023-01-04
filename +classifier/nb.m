@@ -5,11 +5,11 @@ classdef nb < handle
 	% by cell
 	methods (Static)
 
-		function [Mdl, ops] = train(count,ops)
+		function [Mdl, ops] = train(spk_count,ops)
 			% train naive bayes classifier, with preprocessing steps
-			% Input: 	count - nclass * 1 cells, with each cell being ntrs * nneurons matrix
+			% Input: 	spk_count - nclass * 1 cells, with each cell being ntrs * nneurons matrix
+			% 					alternatively, input data struct from CTA project
 			% 			ops - classifier parameters, rescale, if_save, exclude_id
-
 
 			if nargin < 2
 				ops = struct;
@@ -17,15 +17,19 @@ classdef nb < handle
 			ops.rescale = getOr(ops,'rescale',1);
 			if_save = getOr(ops,'if_save',false);
 
+			% convert data to spike count if input is raw data struct
+			if isstruct(spk_count) && isfield(spk_count,'spikes')
+				[spk_count,ops] = classifier.count_spk.events(spk_count,ops);
+			end
 
 			% include certain cells and rescale, default include all cells
 			% include_id = [9 13 28 29 30 34 46 54 67]; ops.exclude_id = getOr(ops,'exclude_id',~ismember(1:size(count{1},1),include_id));
-			ops.exclude_id = getOr(ops,'exclude_id',false(1,size(count{1},1)));
+			ops.exclude_id = getOr(ops,'exclude_id',false(1,size(spk_count{1},1)));
 
 			% remove cells with 0 variance
-			v = catcell(cellfun(@(x) std(x,[],2), count,'UniformOutput',false));
+			v = catcell(cellfun(@(x) std(x,[],2), spk_count,'UniformOutput',false));
 			ops.exclude_id = ops.exclude_id | (prod(v,2)==0)';
-			data_nb = cellfun(@(x) x(~ops.exclude_id,:) / ops.rescale, count,'UniformOutput',false);
+			data_nb = cellfun(@(x) x(~ops.exclude_id,:) / ops.rescale, spk_count,'UniformOutput',false);
 
 			% create table and run classifier
 			X = catcell(data_nb,2)'; % 90 cells * 100 trials response

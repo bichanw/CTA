@@ -2,5 +2,11 @@
 results
 
 # temporary files
-tmp.pdf
-tmp.png
+tmp*
+error.mat
+
+# jupyter lab 
+.ipynb_checkpoints
+
+# mac
+.DS_Store
