@@ -10,6 +10,9 @@ classdef set_fig < handle
 				t_last_reward = max([data.rewards.all.rear(end) data.rewards.all.front(end)]);
 				h = text(ax,t_last_reward, ax.YLim(1), sprintf('last\nreward'),'FontSize',ax.FontSize-1,'horizontalalignment', 'center', 'verticalalignment', 'top'); 
 			end
+			if isfield(data,'licl')
+				h = text(ax,data.licl, ax.YLim(1), sprintf('licl'),'FontSize',ax.FontSize-1,'horizontalalignment', 'center', 'verticalalignment', 'top'); 
+			end
 
 			% figures setting
 			xlabel(ax,sprintf('\ntime (s)'));

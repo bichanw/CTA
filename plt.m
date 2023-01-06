@@ -20,6 +20,10 @@ classdef plt < handle
 				t_last_reward = max([data.rewards.all.rear(end) data.rewards.all.front(end)]);
 				plot(ax,t_last_reward*[1 1],ax.YLim,'k--'); % last reward
 			end
+			% Licl
+			if isfield(data,'licl')
+				plot(ax,data.licl*[1 1],ax.YLim,'k--'); % last reward
+			end
 
 			% figures setting
 			% h = text(ax,t_last_reward, ax.YLim(1), sprintf('last\nreward'),'FontSize',ax.FontSize-1,'horizontalalignment', 'center', 'verticalalignment', 'top'); 

@@ -17,8 +17,6 @@ classdef load_data < handle
 			end
 
 			% main folder where data is stored
-			% session = datetime(2022,11,30);
-			% subject = '001';
 			folder = sprintf('/jukebox/witten/Chris/data/neuropixels_cta/calca_%s/%s',subject,datestr(session,'yyyy-mm-dd'));
 
 
@@ -42,6 +40,13 @@ classdef load_data < handle
 						data.port_is_water(1) = true;
 					end
 					fclose(f);
+				end
+			% LiCl injection time
+				licl_f = dir(sprintf('%s/licl_time*.txt',folder));
+				if ~isempty(licl_f)
+					f = fopen([licl_f.folder '/' licl_f.name],'r');
+					A = fscanf(f,'%d:%d');
+					data.licl = A(1)*60 + A(2); % in seconds
 				end
 			% novel / familiar preference based on 
 				if exist([folder '/psths.mat']);

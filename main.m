@@ -2,7 +2,7 @@ clear all; clc; close all;
 
 % ----- individual cell plotting ----- %
 % parameters
-plt_name = 'FR_amp';
+plt_name = 'FR';
 extension = 'png';
 
 
@@ -14,6 +14,11 @@ for iSession = 1:numel(Sessions.subject)
 
 	% parameters
 	ops = struct('exclude_id',false(size(data.spikes)));
+
+
+	[cost,valid] = classifier.nb.individual_cv(data,ops,true);
+	return
+
 
 	% % plotting initiation
 	% cells_2_plt = 1:numel(data.spikes); 
@@ -40,7 +45,7 @@ for iSession = 1:numel(Sessions.subject)
 
 	% session level processing
 	% classifier.plt.posterior(data,[],ops); % plot posterior
-	ops.tp = [0 1]; classifier.plt.dprime(data,ops);
+	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
 
 	% % each cell as a pdf?
 	% cells_2_plt = 1:numel(data.spikes); 
@@ -57,17 +62,10 @@ end
 
 return
 
-classifier.plt.dprime(data,struct());
-% raster plot
-data = load_data.all(datetime(2022,12,4),'001');
 
-[count,ops] = classifier.count_spk.events(data,struct());
-
-dp_front = my_dp(count{1}',count{3}');
-dp_rear = my_dp(count{2}',count{3}');
+'/jukebox/witten/Chris/matlab/cz/neuropixels-cta/calca001-20221130.mat'
 
 
-ax = np; scatter(abs(dp_front),abs(dp_rear));xlabel('abs dp front');ylabel('abs dp rear');ef;
 % examine if amplitude change
 	% first 5 min vs last 5 min?
 	t_2_cmp = 5 * 60; % 300 s
