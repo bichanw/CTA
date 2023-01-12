@@ -1,34 +1,31 @@
-classdef nb < handle
-% master class for naive bayes classifier
+classdef mnl < handle
+% master class for multinomial logistics classifier
 
 
 	% by cell
 	methods (Static)
-		function Posterior = predict(Mdl,X)
-			[label,Posterior,Cost] = predict(Mdl,X);
-		end
 
 		function [Mdl, ops] = train(data,ops)
 			% train naive bayes classifier, with preprocessing steps
 			% Input: 	data - data struct
+			% 				   alternatively it could be ncategories * 1 cell
 			% 			ops - classifier parameters, rescale, if_save, exclude_id
 
 			if nargin < 2
 				ops = struct;
 			end
-			if_cv = getOr(ops,'if_cv',true);
+			if_save = getOr(ops,'if_save',false);
 
 			% convert data to spike count if input is raw data struct
-			if isstruct(data)
-				[X,Y,ops] = classifier.data_2_XY(data,ops);
+			if ~isdouble(data)
+				[X,Y] = classifier.data_2_XY(data,ops);
 			end
-			Mdl = fitcnb(X,Y);
+			[Mdl.B,Mdl.dev,Mdl.stats] = mnrfit(X,Y);
 
 			% cross validation by me
-			if if_cv
-				[cost,cv] = classifier.nb.CV_bw(Mdl.X,Mdl.Y);
-				fprintf('Cross validation loss: %.2f\n',cost);
-			end
+			[cost,cv] = classifier.nb.CV_bw(Mdl.X,Mdl.Y);
+			fprintf('Cross validation loss: %.2f\n',cost);
+			
 
 			% confusion matrix
 			% [isLabels,score] = resubPredict(Mdl);

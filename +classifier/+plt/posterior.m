@@ -1,16 +1,19 @@
 function ops = posterior(data,Mdl,ops)
+% plot postieror traces
 
-% retrain a naive bayes classifier if not input
+% set classifier
+Classifier = getOr(ops,'classifier',classifier.nb());
+
+% retrain a model if there's no input
 if isempty(Mdl)
-	[Mdl, ops] = classifier.nb.train(data,ops);
-	ops.Mdl = Mdl;
+	[Mdl, ops] = Classifier.train(data,ops);
 end
 
 % count spikes time course
 [count,ops] = classifier.count_spk.time_course(data,ops);
 
 % calculate posterior
-[label,Posterior,Cost] = predict(Mdl,count');
+Posterior = Classifier.predict(Mdl,count');
 
 
 % plot initiation

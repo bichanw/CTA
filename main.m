@@ -1,4 +1,4 @@
-clear all; clc; close all;
+clear all; clc; close all; addpath('helpfun');
 
 % ----- individual cell plotting ----- %
 % parameters
@@ -12,14 +12,12 @@ for iSession = 1:numel(Sessions.subject)
 	% load data
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
 
-	% parameters
-	ops = struct('exclude_id',false(size(data.spikes)));
+	% cell selection
+	% ops = struct('exclude_id',false(1,numel(data.spikes))); % all cells
+	ops = classifier.select_cells.sig_resp(data,struct());
+	% return
 
-
-	[cost,valid] = classifier.nb.individual_cv(data,ops,true);
-	return
-
-
+	% ----- individual cells ----- %
 	% % plotting initiation
 	% cells_2_plt = 1:numel(data.spikes); 
 	% N = numel(cells_2_plt);
@@ -44,8 +42,9 @@ for iSession = 1:numel(Sessions.subject)
 
 
 	% session level processing
-	% classifier.plt.posterior(data,[],ops); % plot posterior
+	ops = classifier.plt.posterior(data,[],ops); % plot posterior
 	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
+
 
 	% % each cell as a pdf?
 	% cells_2_plt = 1:numel(data.spikes); 
@@ -58,6 +57,10 @@ for iSession = 1:numel(Sessions.subject)
 
 
 end
+
+% save processing setting
+saveops(ops);
+
 
 
 return
