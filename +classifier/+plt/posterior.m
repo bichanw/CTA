@@ -1,5 +1,10 @@
-function ops = posterior(data,Mdl,ops)
+function ops = posterior(data,Mdl,ops,prefix)
 % plot postieror traces
+
+% initiation
+if nargin < 4
+	prefix = ''; % figure prefix
+end
 
 % set classifier
 Classifier = getOr(ops,'classifier',classifier.nb());
@@ -37,10 +42,10 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 	legend(ax(1),{'front','back'});
 
 	% save figure
-	export_fig(sprintf('results/posterior_%s_%s_%d.pdf',data.subject,datestr(data.session,'yymmdd'),ibatch));
+	export_fig(sprintf('results/%s_posterior_%s_%s_%d.pdf',prefix,data.subject,datestr(data.session,'yymmdd'),ibatch));
 
 end
-append_script(sprintf('results/posterior_%s_%s',data.subject,datestr(data.session,'yymmdd')));
+append_script(sprintf('results/%s_posterior_%s_%s',prefix,data.subject,datestr(data.session,'yymmdd')));
 
 
 end

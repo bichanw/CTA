@@ -12,12 +12,15 @@ for iSession = 1:numel(Sessions.subject)
 	% load data
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
 
-	% cell selection
-	% ops = struct('exclude_id',false(1,numel(data.spikes))); % all cells
-	ops = classifier.select_cells.sig_resp(data,struct());
-	% return
+	% parameter section
+	ops = struct('if_cv',false,'classifier',classifier.mnr());
 
-	% ----- individual cells ----- %
+	% cell selection
+	ops = classifier.select_cells.sig_resp(data,ops);
+	% ops = struct('exclude_id',false(1,numel(data.spikes))); % all cells
+
+
+	% ----- individual cell level plot ----- %
 	% % plotting initiation
 	% cells_2_plt = 1:numel(data.spikes); 
 	% N = numel(cells_2_plt);
@@ -41,8 +44,8 @@ for iSession = 1:numel(Sessions.subject)
 	% if strcmp(extension,'pdf') append_script(sprintf('results/%s_%s_%s',plt_name,datestr(data.session,'YYmmdd'),data.subject)); end
 
 
-	% session level processing
-	ops = classifier.plt.posterior(data,[],ops); % plot posterior
+	% ----- session level plot ----- %
+	ops = classifier.plt.posterior(data,[],ops,'mnr'); % plot posterior
 	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
 
 

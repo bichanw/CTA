@@ -11,6 +11,7 @@ classdef nb < handle
 		function [Mdl, ops] = train(data,ops)
 			% train naive bayes classifier, with preprocessing steps
 			% Input: 	data - data struct
+			% 				 - or cell wit {X, Y}
 			% 			ops - classifier parameters, rescale, if_save, exclude_id
 
 			if nargin < 2
@@ -21,12 +22,16 @@ classdef nb < handle
 			% convert data to spike count if input is raw data struct
 			if isstruct(data)
 				[X,Y,ops] = classifier.data_2_XY(data,ops);
+			elseif iscell(data)
+				X = data{1};
+				Y = data{2};
 			end
+			ops.classifier = classifier.nb();
 			Mdl = fitcnb(X,Y);
 
 			% cross validation by me
 			if if_cv
-				[cost,cv] = classifier.nb.CV_bw(Mdl.X,Mdl.Y);
+				[cost,cv] = classifier.CV_bw(Mdl.X,Mdl.Y,10,ops.classifier);
 				fprintf('Cross validation loss: %.2f\n',cost);
 			end
 
@@ -38,68 +43,6 @@ classdef nb < handle
 			% [label,Posterior,Cost] = predict(Mdl,X);
 		end
 
-
-
-		function [cost,cv] = CV_bw(X,Y,n_fold)
-
-			% parameters
-			if nargin < 3
-				n_fold = 10;
-			end
-
-
-
-			% partition
-			n_sample = size(X,1);
-			% ind = repmat([1:n_fold],1,n_sample/n_fold);
-			% ind = ind(randperm(numel(ind)));
-
-			c = cvpartition(n_sample,'KFold',n_fold);
-
-			% keep cross-validation information
-			cv.ind = nan(n_sample,1); % test set label
-			cv.post_label = nan(n_sample,1);
-
-
-			% validate
-			n_mis = 0;
-			n_valid = 0;
-			for ifold = 1:n_fold
-
-				% save index
-				cv.ind(c.test(ifold)) = ifold;
-
-				try
-					% train
-					mdl = fitcnb(X(c.training(ifold),:),Y(c.training(ifold),:));
-
-					% predict
-					post = classifier.posterior_bw(mdl,X(c.test(ifold),:));
-					[~,post_label] = max(post,[],2);
-
-				catch ME
-					% if zero variance, continue to the next partition
-					save('error.mat','ME');
-					continue
-				end
-
-				% keep label
-				cv.post_label(c.test(ifold)) = post_label;
-
-				% performance
-				n_valid = n_valid + sum(sum(c.test(ifold)));
-				n_mis   = n_mis + sum(post_label~=Y(c.test(ifold)));
-			end
-
-			% no valid solution across any partition
-			fprintf('%d valid prediction out of %d\n',sum(~isnan(cv.post_label)), numel(cv.post_label));
-			if sum(~isnan(cv.post_label))==0
-				fprintf('Warning: no valid solution across any partition for cross-validation\n');
-			end
-
-			cost = n_mis / n_valid;
-
-		end
 
 		function [cost,valid] = individual_cv(data,ops,if_plot)
 

@@ -1,9 +1,12 @@
-function [cost,cv] = CV_bw(X,Y,n_fold)
+function [cost,cv] = CV_bw(X,Y,n_fold,Classifier)
 % my script for doing cross validation
 
 	% parameters
 	if nargin < 3
 		n_fold = 10;
+	end
+	if nargin < 4
+		Classifier = classifier.nb();
 	end
 
 
@@ -27,13 +30,10 @@ function [cost,cv] = CV_bw(X,Y,n_fold)
 
 		try
 			% train
-			% mdl = classifier.nb.train()
-			mdl = fitcnb(X(c.training(ifold),:),Y(c.training(ifold),:));
+			mdl = Classifier.train({X(c.training(ifold),:),Y(c.training(ifold),:)},ops);
 
 			% predict
-			post = classifier.nb.predict(Mdl,X(c.test(ifold),:));
-			% post = predict()
-			% post = classifier.posterior_bw(mdl,X(c.test(ifold),:));
+			post = Classifier.predict(mdl,X(c.test(ifold),:));
 			[~,post_label] = max(post,[],2);
 
 		catch ME
