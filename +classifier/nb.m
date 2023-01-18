@@ -26,13 +26,16 @@ classdef nb < handle
 				X = data{1};
 				Y = data{2};
 			end
+
+
+			% run classifier
 			ops.classifier = classifier.nb();
 			Mdl = fitcnb(X,Y);
 
 			% cross validation by me
 			if if_cv
-				[cost,cv] = classifier.CV_bw(Mdl.X,Mdl.Y,10,ops.classifier);
-				fprintf('Cross validation loss: %.2f\n',cost);
+				[ops.cv_result.cost,ops.cv_result.cv] = classifier.CV_bw(Mdl.X,Mdl.Y,10,ops.classifier);
+				fprintf('Cross validation loss: %.2f\n',ops.cv_result.cost);
 			end
 
 			% confusion matrix

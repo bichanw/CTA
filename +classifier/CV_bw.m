@@ -17,6 +17,7 @@ function [cost,cv] = CV_bw(X,Y,n_fold,Classifier)
 	% keep cross-validation information
 	cv.ind = nan(n_sample,1); % test set label
 	cv.post_label = nan(n_sample,1);
+	cv.true_label = Y;
 
 
 	% validate

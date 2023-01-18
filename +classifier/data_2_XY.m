@@ -17,14 +17,26 @@ end
 ops.exclude_id = getOr(ops,'exclude_id',false(1,size(spk_count{1},1)));
 
 % remove cells with 0 variance
-v = catcell(cellfun(@(x) std(x,[],2), spk_count,'UniformOutput',false));
-if size(v,2)~=numel(spk_count) v = v'; end % need this for only 1 cell
-ops.exclude_id = ops.exclude_id | (prod(v,2)==0)';
-data_nb = cellfun(@(x) x(~ops.exclude_id,:) / ops.rescale, spk_count,'UniformOutput',false);
+% need to move this to naive bayes in the future
+if getOr(ops,'if_exclude_0var',true)
+	v = catcell(cellfun(@(x) std(x,[],2), spk_count,'UniformOutput',false));
+	if size(v,2)~=numel(spk_count) v = v'; end % need this for only 1 cell
+	ops.exclude_id = ops.exclude_id | (prod(v,2)==0)';
+	ops.exclude_method = [{'0 variance'}, getOr(ops,'exclude_method',{})];
+end
 
 % create table and run classifier
+data_nb = cellfun(@(x) x(~ops.exclude_id,:) / ops.rescale, spk_count,'UniformOutput',false);
 X = catcell(data_nb,2)'; % 90 cells * 100 trials response
 Y = catcell(arrayfun(@(i) i*ones(size(data_nb{i},2),1),1:numel(data_nb),'UniformOutput',false),1);
 
+
+% add fake value to 0 variance dataset
+ops.fake0 = getOr(ops,'fake0',0);
+for c = unique(Y')
+	trs = find(Y==c); % find all samples within a category
+	zero_ind = find(std(X(trs,:),[],1)==0); % cells with 0 variance
+	X(trs(end),zero_ind) = X(trs(end),zero_ind) + ops.fake0; % add 1e-5 to the last trial within the category
+end
 
 end

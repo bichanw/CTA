@@ -8,7 +8,7 @@ classdef count_spk < handle
 				ops = struct;
 			end
 			ops.tp      = getOr(ops,'tp',[0.1 0.7]);
-			ops.events  = getOr(ops,'events',{'front','rear','precue'});
+			ops.events  = {'front','rear','precue'}; % ops.events  = getOr(ops,'events',{'front','rear','precue'});
 
 			% count spikes
 			for i = 1:numel(data.spikes)

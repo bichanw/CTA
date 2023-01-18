@@ -13,7 +13,7 @@ for iSession = 1:numel(Sessions.subject)
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
 
 	% parameter section
-	ops = struct('if_cv',false,'classifier',classifier.mnr());
+	ops = struct('if_cv',false,'classifier',classifier.nb()); 
 
 	% cell selection
 	ops = classifier.select_cells.sig_resp(data,ops);
@@ -45,9 +45,10 @@ for iSession = 1:numel(Sessions.subject)
 
 
 	% ----- session level plot ----- %
-	ops = classifier.plt.posterior(data,[],ops,'mnr'); % plot posterior
+	ops.if_exclude_0var = true; ops.fake0 = 0;
+	classifier.plt.cv(data,ops,'nb_exclude_');return
+	% ops = classifier.plt.posterior(data,[],ops,'mnr'); % plot posterior
 	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
-
 
 	% % each cell as a pdf?
 	% cells_2_plt = 1:numel(data.spikes); 
@@ -68,9 +69,13 @@ saveops(ops);
 
 return
 
+% cross validation qualification
 
-'/jukebox/witten/Chris/matlab/cz/neuropixels-cta/calca001-20221130.mat'
 
+
+% examine 
+tmp = reshape(catcell(Mdl.DistributionParameters),2,3,110);
+ax = np; imagesc(squeeze(tmp(1,:,:)));colorbar;ef;
 
 % examine if amplitude change
 	% first 5 min vs last 5 min?

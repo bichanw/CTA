@@ -23,6 +23,7 @@ classdef select_cells < handle
 			% exclude cells with neither significant
 			ops.exclude_id = getOr(ops,'exclude_id',false(1,numel(data.spikes)));
 			ops.exclude_id = ops.exclude_id | ~(is_sig(:,1)|is_sig(:,2))';
+			ops.exclude_method = [{'significant response'}, getOr(ops,'exclude_method',{})];
 
 		end
 
