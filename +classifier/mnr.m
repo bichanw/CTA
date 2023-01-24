@@ -7,7 +7,12 @@ classdef mnr < handle
 
 
 		function Posterior = predict(Mdl,X)
-			Posterior = mnrval(Mdl.B,X);
+			if 0 % matlab
+				Posterior = mnrval(Mdl.B,X);
+			else % python
+				tmp = X * Mdl.coef + Mdl.intercept;
+				Posterior = exp(tmp) ./ sum(exp(tmp),2);
+			end
 		end
 
 		function [Mdl, ops] = train(data,ops)
@@ -29,7 +34,17 @@ classdef mnr < handle
 				Y = data{2};
 			end
 			ops.classifier = classifier.mnr();
-			[Mdl.B,Mdl.dev,Mdl.stats] = mnrfit(X,Y);
+
+			% train model
+			if 0 % using matlab built in function
+				[Mdl.B,Mdl.dev,Mdl.stats] = mnrfit(X,Y);
+			else % using python
+				save('mat/tmp.mat','X','Y');
+				system('python +classifier/mnr.py');
+				load('mat/pythonsave.mat');
+				Mdl = struct('coef',coef,'intercept',intercept);
+				fprintf('Make sure did not parallel run.\n');
+			end
 
 			% cross validation by me
 			if if_cv

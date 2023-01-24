@@ -4,7 +4,7 @@ classdef load_data < handle
 
 	methods (Static)
 
-		function data = all(session,subject)
+		function data = all(session,subject,ops)
 			% master script to load all sorts of data on one day
 			% session - datetime variable of the day of the recording
 			% subject - subject number
@@ -12,8 +12,11 @@ classdef load_data < handle
 
 			% default example
 			if nargin == 0
-				session = datetime(2022,7,15);
-				subject = '238';
+				session = datetime(2022,12,4);
+				subject = '001';
+			end
+			if nargin < 3
+				ops = struct();
 			end
 
 			% main folder where data is stored
@@ -26,7 +29,7 @@ classdef load_data < handle
 				if ~isempty(event_f)
 					load([event_f.folder filesep event_f.name]);
 				else
-					data = struct;
+					data = struct();
 				end
 			% front / rare - water / grape pair
 				port_f = dir(sprintf('%s/reward_location_*.txt',folder));
@@ -63,7 +66,7 @@ classdef load_data < handle
 			% 	data_f = [folder '/pykilosortfiles/results'];
 			% end
 			data_f = load_data.ks_folder(session,subject);
-			data = load_data.spike_ks(data_f,data);
+			data = load_data.spike_ks(data_f,data,ops);
 
 
 
@@ -105,7 +108,7 @@ classdef load_data < handle
 
 
 		% spike data from kilosort
-		function data = spike_ks(folder, data, if_good)
+		function data = spike_ks(folder, data, ops)
 			% load kilosort into data struct format
 			% folder  - kilosort results folder
 			% data    - output struct 
@@ -113,8 +116,9 @@ classdef load_data < handle
 
 			% if only keeping good units
 			if nargin < 3
-				if_good = false;
+				ops = struct();
 			end
+			if_good = getOr(ops,'if_good',false);
 
 			% load sampling rate
 			if exist('pyrunfile')
@@ -131,6 +135,13 @@ classdef load_data < handle
 			% - 1 = mua
 			% - 2 = good
 			% - 3 = unsorted
+
+			% select good units
+			if if_good
+				data.cids(data.cgs==1) = [];
+				data.cgs(data.cgs==1) = [];
+				fprintf('good units\n');
+			end
 
 			% load spikes
 			spike_times = readNPY([folder '/spike_times.npy']);

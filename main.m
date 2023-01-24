@@ -13,7 +13,8 @@ for iSession = 1:numel(Sessions.subject)
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
 
 	% parameter section
-	ops = struct('if_cv',false,'classifier',classifier.nb()); 
+	ops = struct('if_cv',false,'classifier',classifier.mnr());  % classifier
+
 
 	% cell selection
 	ops = classifier.select_cells.sig_resp(data,ops);
@@ -45,21 +46,11 @@ for iSession = 1:numel(Sessions.subject)
 
 
 	% ----- session level plot ----- %
-	ops.if_exclude_0var = true; ops.fake0 = 0;
-	classifier.plt.cv(data,ops,'nb_exclude_');return
-	% ops = classifier.plt.posterior(data,[],ops,'mnr'); % plot posterior
+	% ops = struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)); classifier.plt.psth(data,ops);
+	ops = struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)); classifier.plt.raster(data,struct());
+	% ops.if_exclude_0var = true; ops.fake0 = 0;classifier.plt.cv(data,ops,'pythonmnr');
+	% ops = classifier.plt.posterior(data,[],ops,'pythonmnr'); % plot posterior
 	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
-
-	% % each cell as a pdf?
-	% cells_2_plt = 1:numel(data.spikes); 
-	% for ii = cells_2_plt
-	% 	ax = np;
-	% 	plt.FR_amp(data,ii,ax);
-	% 	set_fig.FR_amp(data,ax);
-	% 	return
-	% end
-
-
 end
 
 % save processing setting
@@ -70,6 +61,11 @@ saveops(ops);
 return
 
 % cross validation qualification
+
+% data preparation
+data = load_data.all(datetime(2022,12,4),'002');
+
+
 
 
 

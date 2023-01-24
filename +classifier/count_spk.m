@@ -18,13 +18,17 @@ classdef count_spk < handle
 			end
 		end
 
+
+		
 		function [spk_count,ops] = time_course(data,ops)
 			% count spikes for the time course of a session
 			% or with edges in ops.posterior_t
 			% ops.tp - time window used to count spike for training
 
-			% parameter initiation8
+			% parameter initiation
+			ops.exclude_id = getOr(ops,'exclude_id',false(size(data.spikes)));
 			posterior_t_edges = getOr(ops,'posterior_t_edges',data.video(1):0.5:data.video(end));
+			ops.tp = getOr(ops,'tp',[0 1]);
 			bin_width = diff(ops.tp); 
 
 			spk_count = NaN(sum(~ops.exclude_id),numel(posterior_t_edges)); t = [];

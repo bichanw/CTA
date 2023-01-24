@@ -40,7 +40,7 @@ if prod(valid==n_sample)
 	xlabel('misclassification rate');
 % invalid cv
 else
-	histogram2(ax(2),valid,cost,'DisplayStyle','tile','ShowEmptyBins','on','EdgeColor','none','XBinEdges',linspace(0,1,ceil(n_sample/10)));
+	histogram2(ax(2),valid,cost,'DisplayStyle','tile','ShowEmptyBins','on','EdgeColor','none','XBinEdges',linspace(0,1,ceil(n_sample/10)),'YBinEdges',linspace(0,1,n_sample));
 	% histogram2(ax(2),valid,cost,'DisplayStyle','tile','ShowEmptyBins','on','EdgeColor','none');
 	xlabel(ax(2),'% valid');
 	ylabel(ax(2),{'misclassification','rate'});
@@ -51,7 +51,11 @@ c = colorbar(ax(2));
 
 
 % figure setting
-colormap(ax(1),[1 1 1;1 0 0; 0 0 0; 0.8 0.8 0.3]); % need to be after calling colormap('gray')
+if any(predicted==0)
+	colormap(ax(1),[1 1 1;1 0 0; 0 0 0; 0.8 0.8 0.3]); % need to be after calling colormap('gray')
+else
+	colormap(ax(1),[1 0 0; 0 0 0; 0.8 0.8 0.3]); % need to be after calling colormap('gray')
+end
 export_fig(sprintf('results/%scv_%s_%s.png',prefix,data.subject,datestr(data.session,'YYmmdd')),'-m3');
 
 end
