@@ -29,7 +29,7 @@ for it = 1:numel(T_STARTS)
 	% licl if applied
 	if isfield(data,'licl') && (data.licl>=toi(1)&&data.licl<=toi(2))
 		plot([1 1]*data.licl,[0 numel(spk_2_plt)+1],'k-','LineWidth',0.7);
-		h = text(ax,data.licl, numel(spk_2_plt)+1, 'licl','FontSize',ax.FontSize-1,'horizontalalignment', 'center', 'verticalalignment', 'top'); 
+		text(ax,data.licl, numel(spk_2_plt)+1, 'licl','FontSize',ax.FontSize-1,'horizontalalignment', 'center', 'verticalalignment', 'top'); 
 	end
 	
 	% add division for different cells
