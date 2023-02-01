@@ -18,7 +18,7 @@ valid = nan(n_repeat,1);
 
 % run cross validation
 for ii = 1:n_repeat
-	[cost(ii),cv] = classifier.CV_bw(X,Y,10,getOr(ops,'classifier',classifier.nb()));
+	[cost(ii),cv] = classifier.CV_bw(X,Y,10,ops);
 	predicted(ii,:) = cv.post_label;
 	valid(ii) = sum(~isnan(cv.post_label)) / n_sample;
 end

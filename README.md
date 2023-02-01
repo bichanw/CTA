@@ -6,7 +6,7 @@ Codes that read and anlalyze electrophysiology (chronic neuropixel 2.0)
 - `load_data.m`: scripts that load behavioral and electrophysiology data
 - `sessions.m`: list all sessions that `main.m` will run through
 - `test_code.ipynb`: notebook contains all the python codes that were tested out
-
+<br><br>
 - `pkgs`: packages dependencies
 - `helpfun`: small self-written utility functions
 - `+single_cell`: plots on properties of individual cells

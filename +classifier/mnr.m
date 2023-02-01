@@ -39,12 +39,13 @@ classdef mnr < handle
 			if 0 % using matlab built in function
 				[Mdl.B,Mdl.dev,Mdl.stats] = mnrfit(X,Y);
 			else % using python
-				save('mat/tmp.mat','X','Y');
+				save('mat/tmp.mat','X','Y','ops');
 				system('python +classifier/mnr.py');
 				load('mat/pythonsave.mat');
 				Mdl = struct('coef',coef,'intercept',intercept);
 				fprintf('Make sure did not parallel run.\n');
 			end
+			ops.Mdl = Mdl;
 
 			% cross validation by me
 			if if_cv

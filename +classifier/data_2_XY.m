@@ -18,7 +18,7 @@ ops.exclude_id = getOr(ops,'exclude_id',false(1,size(spk_count{1},1)));
 
 % remove cells with 0 variance
 % need to move this to naive bayes in the future
-if getOr(ops,'if_exclude_0var',true)
+if getOr(ops,'if_exclude_0var',false)
 	v = catcell(cellfun(@(x) std(x,[],2), spk_count,'UniformOutput',false));
 	if size(v,2)~=numel(spk_count) v = v'; end % need this for only 1 cell
 	ops.exclude_id = ops.exclude_id | (prod(v,2)==0)';

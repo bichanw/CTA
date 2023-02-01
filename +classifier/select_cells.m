@@ -58,7 +58,7 @@ classdef select_cells < handle
 
 			% add non significant cells
 			ind = find(cell_cat==0);
-			n = min([numel(I) n_sig]);
+			n = min([numel(ind) n_sig]);
 			ordered_id = [ordered_id; ind(randperm(numel(ind),n))];
 			ordered_div = [ordered_div ordered_div(end)+n];
 

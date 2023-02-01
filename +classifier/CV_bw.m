@@ -1,4 +1,4 @@
-function [cost,cv] = CV_bw(X,Y,n_fold,Classifier)
+function [cost,cv] = CV_bw(X,Y,n_fold,ops)
 % my script for doing cross validation
 
 	% parameters
@@ -6,8 +6,14 @@ function [cost,cv] = CV_bw(X,Y,n_fold,Classifier)
 		n_fold = 10;
 	end
 	if nargin < 4
-		Classifier = classifier.nb();
+		ops = struct();
 	end
+	if ~isstruct(ops) % old code, input only the classifier
+		ops = struct('classifier',ops);
+	end
+
+	% other initiation
+	Classifier = getOr(ops,'classifier',classifier.mnr());
 
 
 	% partition
@@ -21,7 +27,7 @@ function [cost,cv] = CV_bw(X,Y,n_fold,Classifier)
 
 
 	% validate
-	ops = struct('if_cv',false);
+	ops.if_cv = false;
 	n_mis = 0;
 	n_valid = 0;
 	for ifold = 1:n_fold
