@@ -90,18 +90,18 @@ append_script(sprintf('results/%sposterior_raster_%s_%s',prefix,data.subject,dat
 
 
 %% average posterior
-[Post_avg,~,~,t] = running_average(ops.posterior_t,Posterior>0.1,60,30);
+% [Post_avg,~,~,t] = running_average(ops.posterior_t,Posterior>0.1,60,30);
 
-% plotting
-ax = np;
-plot(ax,t,Post_avg(:,1),'Color',[1 0 0]);
-plot(ax,t,Post_avg(:,2),'Color',[0 0 0]);
-classifier.plt.divider_event(data,ax);
+% % plotting
+% ax = np;
+% plot(ax,t,Post_avg(:,1),'Color',[1 0 0]);
+% plot(ax,t,Post_avg(:,2),'Color',[0 0 0]);
+% classifier.plt.divider_event(data,ax);
 
-set(ax,'XLim',t([1 end]),'XTick',round(t([1 end])));
-xlabel('time (s)');
+% set(ax,'XLim',t([1 end]),'XTick',round(t([1 end])));
+% xlabel('time (s)');
 
-export_fig(sprintf('results/%savg_post_%s_%s.png',prefix,data.subject,datestr(data.session,'YYmmdd')),'-m3');
+% export_fig(sprintf('results/%savg_post_%s_%s.png',prefix,data.subject,datestr(data.session,'YYmmdd')),'-m3');
 
 
 end
