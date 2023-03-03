@@ -14,3 +14,8 @@ if isfield(data,'licl')
 	plot(ax,[1 1]*data.licl,ax.YLim,'k-','LineWidth',0.7);
 	text(ax,data.licl, ax.YLim(1), 'licl','FontSize',ax.FontSize-1,'horizontalalignment', 'center', 'verticalalignment', 'top'); 
 end
+% cgrp if applied
+if isfield(data,'laser') 
+	plot(ax,[1 1]*data.laser(1,1),ax.YLim,'k-','LineWidth',0.7);
+	text(ax,data.laser(1,1), ax.YLim(1), sprintf('first\nstim'),'FontSize',ax.FontSize-1,'horizontalalignment', 'center', 'verticalalignment', 'top'); 
+end

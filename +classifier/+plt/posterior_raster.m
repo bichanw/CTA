@@ -13,7 +13,7 @@ switch getOr(ops,'posterior_method',1)
 case 1 % calculate posterior
 
 	% set classifier
-	Classifier = getOr(ops,'classifier',classifier.nb());
+	Classifier = getOr(ops,'classifier',classifier.mnr());
 
 	% retrain a model if there's no input
 	if isempty(Mdl)
@@ -24,7 +24,7 @@ case 1 % calculate posterior
 	[count,ops] = classifier.count_spk.time_course(data,ops);
 
 	% calculate posterior
-	Posterior = Classifier.predict(Mdl,count');
+	Posterior = Classifier.predict(Mdl,count',ops);
 
 case 2 % load from Chris
 	load(['/jukebox/witten/Chris/matlab/cz/neuropixels-cta/calca_' data.subject '_decoders.mat']);
@@ -35,7 +35,28 @@ end
 
 
 % order cells for plotting raster
-ops = classifier.select_cells.novel_vs_fam(data,ops);
+switch 2
+case 1 % sort by ranksum
+	if ~isfield(ops,'novel_vs_fam') || ~isfield(ops.novel_vs_fam,'ordered_id')
+		ops = classifier.select_cells.novel_vs_fam(data,ops);
+	end
+case 2 % sort by coefficient
+
+	ops = classifier.select_cells.by_coef(data,ops);
+	% % front vs back
+	% d_coef = Mdl.coef(:,1) - Mdl.coef(:,2);
+	% [~,I] = sort(d_coef,'descend');
+	% ind   = find(~ops.exclude_id);
+
+	% % % reward vs control
+	% % d_coef = Mdl.coef(:,1) + Mdl.coef(:,2) - Mdl.coef(:,3)*2;
+	% % [~,I] = sort(abs(d_coef),'descend');
+
+	% % replace results
+	% ops.novel_vs_fam.ordered_id    = [ind(I(1:15)) ind(I(end-14:end))];
+	% ops.novel_vs_fam.ordered_div   = [0 15 30];
+	% ops.novel_vs_fam.cell_cat_name = {'front higher','back higher'};
+end
 spk_2_plt = data.spikes(ops.novel_vs_fam.ordered_id);
 ytick_loc = [-2.5 (ops.novel_vs_fam.ordered_div(1:end-1)+ops.novel_vs_fam.ordered_div(2:end))/2];
 

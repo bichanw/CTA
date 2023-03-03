@@ -24,6 +24,7 @@ function [cost,cv] = CV_bw(X,Y,n_fold,ops)
 	cv.ind = nan(n_sample,1); % test set label
 	cv.post_label = nan(n_sample,1);
 	cv.true_label = Y;
+	cv.LL = nan(n_fold,2); % train / test LL
 
 
 	% validate
@@ -37,10 +38,11 @@ function [cost,cv] = CV_bw(X,Y,n_fold,ops)
 
 		try
 			% train
-			mdl = Classifier.train({X(c.training(ifold),:),Y(c.training(ifold),:)},ops);
+			[mdl,ops] = Classifier.train({X(c.training(ifold),:),Y(c.training(ifold),:)},ops);
 
-			% predict
-			post = Classifier.predict(mdl,X(c.test(ifold),:));
+			% predict and calculate LL
+			[~,   cv.LL(ifold,1)] = Classifier.predict(mdl,X(c.training(ifold),:),ops,Y(c.training(ifold),:));
+			[post,cv.LL(ifold,2)] = Classifier.predict(mdl,X(c.test(ifold),:),ops,Y(c.test(ifold),:));
 			[~,post_label] = max(post,[],2);
 
 		catch ME

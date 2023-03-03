@@ -39,4 +39,7 @@ for c = unique(Y')
 	X(trs(end),zero_ind) = X(trs(end),zero_ind) + ops.fake0; % add 1e-5 to the last trial within the category
 end
 
+% keep final neurons in the decoder
+ops.decoder_id = find(~ops.exclude_id);
+
 end

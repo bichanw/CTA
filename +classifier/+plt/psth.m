@@ -21,7 +21,7 @@ for jj = 1:numel(events_oi)
 	for ii = 1:numel(cell_oi)
 		[resp(ii,:),resp_err,RR,raster] = cal_psth(data.spikes{cell_oi(ii)}*1000,events_oi{jj}*1000,'tp',toi,'kernel_width',0.1);
 	end
-	% z score by precue spike count
+	% z score by overall
 	resp_zscored{jj} = (resp - mean(spk_count(cell_oi,:),2)) ./ var(spk_count(cell_oi,:),[],2);
 	resp_zscored{jj}(resp_zscored{jj}==Inf) = 0;
 end
@@ -39,6 +39,7 @@ arrayfun(@(h) plot(h,[0;0],[0.5 numel(cell_oi)+0.5],'--','LineWidth',0.5,'Color'
 % other figure setting
 colormap(flip(cbrewer2('RdBu')));
 arrayfun(@(h) set(h,'CLim',[-1 1]*max(abs(h.CLim)),'YDir','reverse','YLim',[0.5 numel(cell_oi)+0.5]),ax);
+arrayfun(@(h) colorbar(h),ax);
 set(ax(1),'YTick',(ops.novel_vs_fam.ordered_div(1:3)+ops.novel_vs_fam.ordered_div(2:4))/2,'YTickLabel',{'front higher','back higher','no difference'});
 set(ax(2),'YTick',[]);
 arrayfun(@(h) xlabel(h,'time (s)'), ax);

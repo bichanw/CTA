@@ -4,6 +4,32 @@ classdef load_data < handle
 
 	methods (Static)
 
+
+		function brain_region = anatomical(data)
+
+			% load data
+			subject = data.subject;
+			folder = sprintf('/jukebox/witten/Chris/data/neuropixels_cta/calca_%s',subject);
+			for ishank = 1:4
+				f = [folder filesep 'channel_locations_shank' num2str(ishank-1) '.csv'];
+				
+				% when there is data
+				if exist(f)
+					opts = detectImportOptions(f);
+					T = readtable(f,opts);
+
+					% extend region 
+					tmp = T.brain_region';
+					if numel(tmp) == 383
+						tmp(end+1) = tmp(end);
+					end
+					brain_region(ishank,:) = tmp;
+				else
+					brain_region(ishank,:) = repmat({nan},1,384);
+				end
+			end
+		end
+
 		function data = all(session,subject,ops)
 			% master script to load all sorts of data on one day
 			% session - datetime variable of the day of the recording
@@ -32,8 +58,8 @@ classdef load_data < handle
 					data = struct();
 				end
 			% front / rare - water / grape pair
-				port_f = dir(sprintf('%s/reward_location_*.txt',folder));
-				if ~isempty(port_f)
+				if session < datetime(2023,1,1)
+					port_f = dir(sprintf('%s/reward_location_*.txt',folder));
 					f = fopen([port_f.folder '/' port_f.name],'r');
 					C = textscan(f,'%s %s %s\n');
 					data.port_is_water = [false false];
@@ -42,8 +68,23 @@ classdef load_data < handle
 					else
 						data.port_is_water(1) = true;
 					end
-					fclose(f);
+				else
+					port_f = dir(sprintf('%s/*_ports.txt',folder));
+					f = fopen([port_f.folder '/' port_f.name],'r');
+					C = textscan(f,'%s %s %s %s');
+
+					% front novel
+					if (strcmpi(C{1},'Novel')&&strcmpi(C{2},'Front,')) || (strcmpi(C{1},'Water')&&strcmpi(C{2},'Rear,'))
+						data.port_is_water = [false true];
+					% back novel
+					else
+						data.port_is_water = [true false];
+					end
 				end
+				tmp = [1 0 0; 0 0 0];
+				data.port_color = tmp(data.port_is_water+1,:);
+
+				fclose(f);
 			% LiCl injection time
 				licl_f = dir(sprintf('%s/licl_time*.txt',folder));
 				if ~isempty(licl_f)
@@ -91,7 +132,8 @@ classdef load_data < handle
 			data.subject = subject;
 
 			% load amplitude
-			data.amp = load_data.spike_amp(data); 
+			% data.amp = load_data.spike_amp(data); 
+			data.brain_region = load_data.anatomical(data);
 
 		end
 
@@ -128,9 +170,11 @@ classdef load_data < handle
 			end
 
 			% load cluster group
-			[data.cids, data.cgs] = readClusterGroups_bw([folder '/cluster_info.tsv']); % unit group
+			[data.cids, data.cgs,data.ch, data.sh] = readClusterGroups_bw([folder '/cluster_info.tsv']); % unit group
 			data.cids(data.cgs==0) = [];
-			data.cgs(data.cgs==0) = [];
+			data.ch(data.cgs==0)   = [];
+			data.sh(data.cgs==0)   = [];
+			data.cgs(data.cgs==0)  = [];
 			% - 0 = noise
 			% - 1 = mua
 			% - 2 = good

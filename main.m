@@ -8,16 +8,13 @@ extension = 'png';
 
 sessions; % initialize sessions to run
 for iSession = 1:numel(Sessions.subject)
+% for iSession = 2
 
 	% load data
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
 
 	% parameter section
 	params;
-
-	% cell selection
-	ops = classifier.select_cells.sig_resp(data,ops);
-	% ops = struct('exclude_id',false(1,numel(data.spikes))); % all cells
 
 	% ----- individual cell level plot ----- %
 	% % plotting initiation
@@ -46,23 +43,26 @@ for iSession = 1:numel(Sessions.subject)
 	% ----- session level plot ----- %
 	% ops = struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)); classifier.plt.psth(data,ops);
 	% ops = struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)); classifier.plt.raster(data,struct());
-	% ops.if_exclude_0var = true; ops.fake0 = 0;classifier.plt.cv(data,ops,'pythonmnr');
+	% classifier.plt.cv(data,ops,sprintf('all_%s_',ops.mnr.penalty));
 	% ops = struct('novel_vs_fam',struct('n_sig',15),'posterior_method',2);classifier.plt.posterior_raster(data,[],ops,'chris_thresholded_'); % plot posterior
 	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
 	% classifier.plt.avg_firing(data,ops);
+	% classifier.plt.slow_firing(data,ops,'');
 	
-	% figure 2c
-	ops.novel_vs_fam.n_sig = 15;
-	ops = classifier.select_cells.novel_vs_fam(data,ops);
-	ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
-	ops.exclude_method = {'novel_vs_fam'};
 
-	for lambda = logspace(-3,3,3)
-		ops.mnr.lambda = lambda;
-		prefix = sprintf('30cells_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
-		ops = classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+	for penalty = {'l1'}
+		ops.mnr.penalty = penalty{1};
+		for lambda = 1
+		% for lambda = [1e-4 1e-2 1]
+			ops.mnr.lambda = lambda;
+			prefix = sprintf('%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
+			% classifier.plt.brain_region(data,ops,prefix); 
+			% ops = classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+			% classifier.plt.slow_firing(data,ops,prefix);
+			% classifier.plt.examine_coef(data,ops,prefix);
+		end
+
 		classifier.plt.cv(data,ops,prefix);
-		classifier.plt.examine_coef(data,ops,prefix);
 	end
 
 end
@@ -74,10 +74,7 @@ saveops(ops);
 
 return
 
-
-
-
-
+data = load_data.all(datetime(2023,2,14),'280');
 
 
 % examine 

@@ -31,12 +31,24 @@ function h = scatter_event(data,ax,y)
 	h(2,2) = my_scatter(data.cues.all.rear,y,ax,'*','MarkerEdgeColor',Colors(2,:));
 
 	% port entries
-	h(1,3) = my_scatter(data.entries.unrewarded.front,y,ax,'^','MarkerEdgeColor',Colors(1,:));
-	h(2,3) = my_scatter(data.entries.unrewarded.rear,y,ax,'^','MarkerEdgeColor',Colors(2,:));
+	if isfield(data.entries,'unrewarded')
+		tmp = data.entries.unrewarded;
+	else
+		% trim down data for plotting
+		tmp = data.entries.all;
+		tmp.front = tmp.front(:,1);
+		tmp.rear  = tmp.rear(:,1);
+	end
+	h(1,3) = my_scatter(tmp.front,y,ax,'^','MarkerEdgeColor',Colors(1,:));
+	h(2,3) = my_scatter(tmp.rear,y,ax,'^','MarkerEdgeColor',Colors(2,:));
 
 	% laser
 	if isfield(data,'laser')
-		h(1,4) = my_scatter(data.laser.onsets,y,ax,'.','MarkerEdgeColor',[0 0 1]);
+		if isstruct(data.laser)
+			h(1,4) = my_scatter(data.laser.onsets,y,ax,'.','MarkerEdgeColor',[0 0 1]);
+		else
+			h(1,4) = my_scatter(data.laser(:,1),y,ax,'.','MarkerEdgeColor',[0 0 1]);
+		end
 	end
 
 end
