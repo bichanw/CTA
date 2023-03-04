@@ -47,7 +47,9 @@ function h = scatter_event(data,ax,y)
 		if isstruct(data.laser)
 			h(1,4) = my_scatter(data.laser.onsets,y,ax,'.','MarkerEdgeColor',[0 0 1]);
 		else
-			h(1,4) = my_scatter(data.laser(:,1),y,ax,'.','MarkerEdgeColor',[0 0 1]);
+			% h(1,4) = my_scatter(data.laser(:,1),y,ax,'.','MarkerEdgeColor',[0 0 1]);
+			% plot from onset to offset
+			plot(ax,data.laser',repmat(y,size(data.laser')),'Color',[0 0 1]);
 		end
 	end
 

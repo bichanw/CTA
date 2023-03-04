@@ -13,6 +13,7 @@ ops = classifier.select_cells.novel_vs_fam(data,ops);
 ops = classifier.select_cells.sig_resp(data,ops); % select all significant
 
 
+
 % set of available options
 % classifier: object of a classifier with defined train / predict methods
 % exclude_id: boolean vector of n cells (same in data.spikes) * 1, which cells to exclude
@@ -22,3 +23,5 @@ ops = classifier.select_cells.sig_resp(data,ops); % select all significant
 % 				ordered_id: the index of cells (i in data.spikes{i}) that pass the ranksum test 
 % 				
 % decoder_id: defined in data_2_XY.m, data.spikes(ops.decoder_id) was used in the decoder analysis
+% 
+% by_brain_region: {'BLA','CEA'}

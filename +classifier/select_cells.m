@@ -5,6 +5,30 @@ classdef select_cells < handle
 	% by cell
 	methods (Static)
 
+		function ind = by_brain_region(data,ops)
+			% Input:  ops - either ops struct of cells of regions of interest
+			% Output: ind - either cell (multiple roi) or vector (1 roi)
+
+			% extract unit's corresponding region
+			units_region = data.brain_region(sub2ind(size(data.brain_region),data.sh+1,data.ch+1));
+		
+			% find regions
+			if isstruct(ops)
+				regions_oi = getOr(ops,'by_brain_region',{'CEA'});
+			else
+				regions_oi = ops;
+			end
+
+			% all units in region of interest
+			for ii = 1:numel(regions_oi)
+				ind{ii} = cellfun(@(x) contains(x,regions_oi{ii}), units_region);
+			end
+
+			% compress for easier processing
+			if numel(ind)==1  ind = ind{1};  end
+
+		end
+
 		function cell_order = non_zero_coef(data,ops)
 			% run classifier
 			if ~isfield(ops,'Mdl')

@@ -7,8 +7,8 @@ extension = 'png';
 
 
 sessions; % initialize sessions to run
-for iSession = 1:numel(Sessions.subject)
-% for iSession = 2
+% for iSession = 1:numel(Sessions.subject)
+for iSession = 4
 
 	% load data
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
@@ -50,20 +50,19 @@ for iSession = 1:numel(Sessions.subject)
 	% classifier.plt.slow_firing(data,ops,'');
 	
 
-	for penalty = {'l1'}
-		ops.mnr.penalty = penalty{1};
-		for lambda = 1
-		% for lambda = [1e-4 1e-2 1]
-			ops.mnr.lambda = lambda;
-			prefix = sprintf('%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
-			% classifier.plt.brain_region(data,ops,prefix); 
-			% ops = classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
-			% classifier.plt.slow_firing(data,ops,prefix);
-			% classifier.plt.examine_coef(data,ops,prefix);
-		end
+	% select by brain region
+	roi = {'CEA'};
+	ops.exclude_id = getOr(ops,'exclude_id')' | classifier.select_cells.by_brain_region(data,roi);
 
-		classifier.plt.cv(data,ops,prefix);
+	for lambda = [1e-4 1e-2 1]
+		ops.mnr.lambda = lambda;
+		prefix = sprintf('CEA_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
+		ops = classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+		% classifier.plt.brain_region(data,ops,prefix); 
+		classifier.plt.slow_firing(data,ops,prefix);
+		classifier.plt.examine_coef(data,ops,prefix);
 	end
+	% classifier.plt.cv(data,ops,prefix);
 
 end
 
