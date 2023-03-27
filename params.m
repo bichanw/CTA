@@ -1,9 +1,9 @@
-ops = struct('if_cv',false,'classifier',classifier.mnr(),'tp',[0 1]);  % classifier
+ops    = struct('if_cv',false,'classifier',classifier.mnr(),'tp',[0 1]);  % classifier
+prefix = '';
 
 % multinomial logistic regression settings
 ops.mnr.lambda = 1;
 ops.mnr.penalty = 'l1';
-
 
 % select significant cells
 ops.novel_vs_fam.n_sig = 15;
@@ -12,6 +12,20 @@ ops = classifier.select_cells.novel_vs_fam(data,ops);
 % ops.exclude_method = {'novel_vs_fam'};
 ops = classifier.select_cells.sig_resp(data,ops); % select all significant
 
+
+% some plotting options
+ops.plot = struct();
+ops.plot.slow_firing_cell = 'novel_vs_fam'; %{'novel_vs_fam','non_zero_coef'}
+
+
+% do zscore based on separate time scale
+% [~,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+% ops = classifier.select_cells.non_zero_zscore(ops); % clean up cells with 0 variance
+ops.mnr.zscore = true; % do not do separate zscore
+
+
+% remove baseline in the classifier
+% ops.events = {'front','rear'};
 
 
 % set of available options
@@ -25,3 +39,7 @@ ops = classifier.select_cells.sig_resp(data,ops); % select all significant
 % decoder_id: defined in data_2_XY.m, data.spikes(ops.decoder_id) was used in the decoder analysis
 % 
 % by_brain_region: {'BLA','CEA'}
+% 
+% z_score_by_time: mean / variance for zscoring across time partition
+% 				   fields:   M, V, t_partition
+

@@ -22,48 +22,54 @@ else
 end
 
 % plotting
-% scatter
-[ax,r,c] = np(2,n);
-for ii = 1:n
-	for jj = 1:numel(ind)
-		% skip if not data
-		if sum(ind{jj})>0
-			scatter(ax(sub2ind([c r],ii,1)),ops.Mdl.coef(ind{jj},pairs(ii,1)),ops.Mdl.coef(ind{jj},pairs(ii,2)),[],Colors(jj,:));
+if numel(ops.events) > 2
+	% scatter
+	[ax,r,c] = np(2,n);
+	for ii = 1:n
+		for jj = 1:numel(ind)
+			% skip if not data
+			if sum(ind{jj})>0
+				scatter(ax(sub2ind([c r],ii,1)),ops.Mdl.coef(ind{jj},pairs(ii,1)),ops.Mdl.coef(ind{jj},pairs(ii,2)),[],Colors(jj,:));
+			end
 		end
+		% figure setting
+		xlabel(ax(sub2ind([c r],ii,1)),ops.events{pairs(ii,1)});
+		ylabel(ax(sub2ind([c r],ii,1)),ops.events{pairs(ii,2)});
 	end
-	% figure setting
-	xlabel(ax(sub2ind([c r],ii,1)),ops.events{pairs(ii,1)});
-	ylabel(ax(sub2ind([c r],ii,1)),ops.events{pairs(ii,2)});
+	% histogram
+	m = min(ops.Mdl.coef(:));
+	M = max(ops.Mdl.coef(:));
+	for ii = 1:n
+		histogram2(ax(sub2ind([c r],ii,2)),ops.Mdl.coef(:,pairs(ii,1)),ops.Mdl.coef(:,pairs(ii,2)),...
+					'XBinEdges',linspace(m,M,25),'YBinEdges',linspace(m,M,25),...
+					'EdgeColor','none','DisplayStyle','tile','ShowEmptyBins','on');
+		
+		% label
+		xlabel(ax(sub2ind([c r],ii,2)),ops.events{pairs(ii,1)});
+		ylabel(ax(sub2ind([c r],ii,2)),ops.events{pairs(ii,2)});
+		
+		% other axes settings
+		ax(sub2ind([c r],ii,2)).ColorScale = 'log';
+		axis(ax(sub2ind([c r],ii,2)),'square');
+		colorbar(ax(sub2ind([c r],ii,2)));
+	end
+	colormap(cbrewer2('Reds'));
+
+
+	% figure settings
+	title(ax(sub2ind([c r],2,1)),'decoder coefficient');
+	l = legend(ax(sub2ind([c r],3,1)),{'front','back','other'},'box','off'); title(l,'by ranksum');
+
+	% set xlim ylim
+	arrayfun(@(h) set(h,'XLim',[m M],'YLim',[m M]),ax);
+	% arrayfun(@(h) set(h,'XLim',[min([h.XLim(1) h.YLim(1)]) max([h.XLim(2) h.YLim(2)])],'YLim',[min([h.XLim(1) h.YLim(1)]) max([h.XLim(2) h.YLim(2)])]),ax);
+
+	set(gcf,'Position',[0 0 505 350]);
+else
+	ax = np;
+	histogram(ax,ops.Mdl.coef);
 end
-% histogram
-m = min(ops.Mdl.coef(:));
-M = max(ops.Mdl.coef(:));
-for ii = 1:n
-	histogram2(ax(sub2ind([c r],ii,2)),ops.Mdl.coef(:,pairs(ii,1)),ops.Mdl.coef(:,pairs(ii,2)),...
-				'XBinEdges',linspace(m,M,25),'YBinEdges',linspace(m,M,25),...
-				'EdgeColor','none','DisplayStyle','tile','ShowEmptyBins','on');
-	
-	% label
-	xlabel(ax(sub2ind([c r],ii,2)),ops.events{pairs(ii,1)});
-	ylabel(ax(sub2ind([c r],ii,2)),ops.events{pairs(ii,2)});
-	
-	% other axes settings
-	ax(sub2ind([c r],ii,2)).ColorScale = 'log';
-	axis(ax(sub2ind([c r],ii,2)),'square');
-	colorbar(ax(sub2ind([c r],ii,2)));
-end
-colormap(cbrewer2('Reds'));
 
-
-% figure settings
-title(ax(sub2ind([c r],2,1)),'decoder coefficient');
-l = legend(ax(sub2ind([c r],3,1)),{'front','back','other'},'box','off'); title(l,'by ranksum');
-
-% set xlim ylim
-arrayfun(@(h) set(h,'XLim',[m M],'YLim',[m M]),ax);
-% arrayfun(@(h) set(h,'XLim',[min([h.XLim(1) h.YLim(1)]) max([h.XLim(2) h.YLim(2)])],'YLim',[min([h.XLim(1) h.YLim(1)]) max([h.XLim(2) h.YLim(2)])]),ax);
-
-set(gcf,'Position',[0 0 505 350]);
 export_fig(sprintf('results/%scoef_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
 
 

@@ -38,11 +38,11 @@ function [cost,cv] = CV_bw(X,Y,n_fold,ops)
 
 		try
 			% train
-			[mdl,ops] = Classifier.train({X(c.training(ifold),:),Y(c.training(ifold),:)},ops);
+			[mdl,ops_ifold] = Classifier.train({X(c.training(ifold),:),Y(c.training(ifold),:)},ops);
 
 			% predict and calculate LL
-			[~,   cv.LL(ifold,1)] = Classifier.predict(mdl,X(c.training(ifold),:),ops,Y(c.training(ifold),:));
-			[post,cv.LL(ifold,2)] = Classifier.predict(mdl,X(c.test(ifold),:),ops,Y(c.test(ifold),:));
+			[~,   cv.LL(ifold,1)] = Classifier.predict(mdl,X(c.training(ifold),ismember(ops.decoder_id,ops_ifold.decoder_id)),ops_ifold,Y(c.training(ifold),:));
+			[post,cv.LL(ifold,2)] = Classifier.predict(mdl,X(c.test(ifold),ismember(ops.decoder_id,ops_ifold.decoder_id)),ops_ifold,Y(c.test(ifold),:));
 			[~,post_label] = max(post,[],2);
 
 		catch ME

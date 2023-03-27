@@ -7,8 +7,8 @@ extension = 'png';
 
 
 sessions; % initialize sessions to run
-% for iSession = 1:numel(Sessions.subject)
-for iSession = 4
+for iSession = 1:numel(Sessions.subject)
+% for iSession = 3
 
 	% load data
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
@@ -51,19 +51,22 @@ for iSession = 4
 	
 
 	% select by brain region
-	roi = {'CEA'};
-	ops.exclude_id = getOr(ops,'exclude_id')' | classifier.select_cells.by_brain_region(data,roi);
+	% roi = {'CEA'};
+	% ops.exclude_id = getOr(ops,'exclude_id')' | classifier.select_cells.by_brain_region(data,roi);
 
-	for lambda = [1e-4 1e-2 1]
+	% % for lambda = [1e-4 1e-2 1]
+	for lambda = 1
 		ops.mnr.lambda = lambda;
-		prefix = sprintf('CEA_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
-		ops = classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
-		% classifier.plt.brain_region(data,ops,prefix); 
+		prefix = sprintf('novel_fam_diff_sepzscore_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
+		% prefix = sprintf('%s_%s_%.1e_',roi{1},ops.mnr.penalty,ops.mnr.lambda);
+		% ops = classifier.plt.laser_posterior(data,ops,prefix);
 		classifier.plt.slow_firing(data,ops,prefix);
-		classifier.plt.examine_coef(data,ops,prefix);
+		% return
+		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+		% classifier.plt.examine_coef(data,ops,prefix);
+		% classifier.plt.brain_region(data,ops,prefix); 
 	end
 	% classifier.plt.cv(data,ops,prefix);
-
 end
 
 % save processing setting
@@ -73,7 +76,75 @@ saveops(ops);
 
 return
 
-data = load_data.all(datetime(2023,2,14),'280');
+
+% read julia data
+	f = 'mat/100s_30cell_280.jld2';
+	h5disp(f)
+	h5disp(f,'/_types/')
+	tmp = h5read(f,'/single_stored_object');
+
+
+	f = 'mat/280_230214_assignments.jld2';
+	final_assignments = h5read(f,'/final_assignments');
+	final_events      = h5read(f,'/final_events');
+	
+
+
+	% assign spikes to event type
+	[~,Locb]   = ismember(final_assignments,final_events.assignment_id);
+
+	tmp = find(Locb~=0);
+	final_type = final_assignments;
+	final_type(tmp) = final_events.seq_type(Locb(tmp));
+
+
+	% load spikes
+	load('mat/julia.mat');
+
+	% plot spikes
+	ax = np;
+
+	Colors = [0 0 0;1 0 0;0 0 1];
+
+	% plot spikes
+	cell_oi  = unique(clu);
+	event_oi = unique(final_type);
+	for ineuron = 1:numel(cell_oi)
+		for ievent = 1:numel(event_oi)
+			h = my_scatter(t(clu==cell_oi(ineuron)&final_type==event_oi(ievent)),ineuron,ax,...
+							3,'MarkerEdgeColor','none','MarkerFaceColor',Colors(ievent,:),'MarkerFaceAlpha',0.1);
+		end
+	end
+
+	% plot other events
+	% ?
+	h = classifier.plt.scatter_event(data,ax,numel(cell_oi)+1);
+
+
+	export_fig tmp.png -m3
+
+
+% save data for julia
+	data = load_data.all(datetime(2023,2,14),'280');
+	params;
+
+	[~,cell_order] = classifier.select_cells.novel_vs_fam(data,ops);
+	ops.exclude_id = ~ismember(1:numel(data.spikes),cell_order.ordered_id(1:(cell_order.ordered_div(3))));
+
+
+	clu = [];
+	t   = [];
+	toi = [300 1000];
+	cell_oi = find(~ops.exclude_id);
+	for ii = 1:sum(~ops.exclude_id)
+		tmp = data.spikes{cell_oi(ii)}(data.spikes{cell_oi(ii)}>toi(1)&data.spikes{cell_oi(ii)}<toi(2));
+		clu = [clu; ones(numel(tmp),1)*ii];
+		t   = [t; tmp];
+	end
+
+	% saving
+	filename = sprintf('%s_%s',data.subject,datestr(data.session,'YYmmdd'));
+	save('mat/julia.mat','clu','t','cell_oi','filename','toi');
 
 
 % examine 

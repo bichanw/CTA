@@ -11,7 +11,12 @@ end
 n_repeat = 10;
 n_fold   = 10;
 n_sample = numel(Y);
-Lambdas = logspace(-4,4,9);
+if numel(unique(Y)) > 2
+	Lambdas = logspace(-4,4,9);
+else
+	% Lambdas = [logspace(-2,6,9) 1e10];
+	Lambdas = logspace(-4,4,9);
+end
 
 % value of interest
 predicted = nan(n_repeat,numel(Y));
@@ -36,6 +41,10 @@ for jj = 1:numel(Lambdas)
 	% end
 end
 
+% calculate baseline
+n_cat = numel(unique(Y));
+base_LL(2) = n_sample / n_fold * log(1/n_cat);
+base_LL(1) = base_LL(2) * (n_fold-1) ;
 
 
 
@@ -46,12 +55,15 @@ for jj = 1:numel(Lambdas)
 	my_scatter(Lambdas(jj),squeeze(LL(jj,:,1)),ax(1),'MarkerEdgeColor',Colors(1,:));
 	my_scatter(Lambdas(jj),squeeze(LL(jj,:,2)),ax(2),'MarkerEdgeColor',Colors(2,:));
 end
+% plot baseline
+arrayfun(@(ii) plot(ax(ii),Lambdas([1 end]),base_LL(ii)*[1 1],'k--'), 1:2);
+
 
 xlabel(ax(2),'\lambda','Interpreter','tex');
 ylabel(ax(1),'LL');
 title(ax(1),'train'); title(ax(2),'test');
 % legend(ax(2),{'train','test'},'Location','eastoutside','box','off');
-arrayfun(@(h) set(h,'XScale','log'), ax);
+arrayfun(@(h) set(h,'XScale','log','XLim',Lambdas([1 end])), ax);
 set(gcf,'Position',[0 0 450 200]);
 
 

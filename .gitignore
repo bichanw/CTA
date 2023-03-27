@@ -2,6 +2,7 @@
 results
 mat/
 figures/
+pkgs/
 
 # temporary files
 tmp*

@@ -163,11 +163,11 @@ classdef load_data < handle
 			if_good = getOr(ops,'if_good',false);
 
 			% load sampling rate
-			if exist('pyrunfile')
-				SR = double(pyrunfile([folder filesep 'params.py'],'sample_rate'));
-			else % default SR
+			% if exist('pyrunfile')
+			% 	SR = double(pyrunfile([folder filesep 'params.py'],'sample_rate'));
+			% else % default SR
 				SR = 3e4;
-			end
+			% end
 
 			% load cluster group
 			[data.cids, data.cgs,data.ch, data.sh] = readClusterGroups_bw([folder '/cluster_info.tsv']); % unit group

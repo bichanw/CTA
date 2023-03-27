@@ -17,16 +17,12 @@ classdef mnr < handle
 				Posterior = mnrval(Mdl.B,X);
 			else % python
 				% if scaled data when training model, scale again
-				if isfield(ops.mnr,'scale') && ~isfield(ops,'zscore_by_time')
+				if isfield(ops.mnr,'scale')
 					X = (X - ops.mnr.scale.M)./ ops.mnr.scale.V;
 				end
 
 				% predict
 				tmp = X * Mdl.coef + Mdl.intercept;
-				% stack for binary decision
-				if size(Mdl.coef,2) == 1
-					tmp = [-tmp, tmp];
-				end
 				Posterior = exp(tmp) ./ sum(exp(tmp),2);
 			end
 
@@ -64,7 +60,6 @@ classdef mnr < handle
 			ops.classifier = classifier.mnr();
 
 			% parameter initation
-			ops.exclude_id = getOr(ops,'exclude_id',false(size(X,2),1));
 			ops.mnr = getOr(ops,'mnr',struct());
 			ops.mnr.penalty = getOr(ops.mnr,'penalty','l2');
 			ops.mnr.lambda  = getOr(ops.mnr,'lambda',1);
@@ -72,34 +67,19 @@ classdef mnr < handle
 
 			% zscore for preprocessing
 			if ops.mnr.zscore
-				% calculate mean and variance
-				if ~isfield(ops.mnr,'scale')
-					ops.mnr.scale.M = mean(X,1); ops.mnr.scale.V = std(X,[],1);
-				end
-
-				% remove nan
-				ind = (ops.mnr.scale.V==0);
-				X(:,ind) = [];
-				ops.mnr.scale.M(ind) = [];
-				ops.mnr.scale.V(ind) = [];
-				tmp = find(~ops.exclude_id); ops.exclude_id(tmp(ind)) = true;
-				ops.decoder_id = find(~ops.exclude_id);
-
-				% zscore
+				ops.mnr.scale.M = mean(X,1); ops.mnr.scale.V = std(X,[],1);
 				X = (X - ops.mnr.scale.M)./ ops.mnr.scale.V;
 			end
-
 
 			% train model
 			if 0 % using matlab built in function
 				[Mdl.B,Mdl.dev,Mdl.stats] = mnrfit(X,Y);
 			else % using python
-				id = sprintf('%.3f',rand());
-				save(sprintf('mat/tmp_%s.mat',id),'X','Y','ops');
-				system(['python +classifier/mnr.py ' id]);
-				load(['mat/pythonsave_' id '.mat']);
+				save('mat/tmp.mat','X','Y','ops');
+				system('python +classifier/mnr.py');
+				load('mat/pythonsave.mat');
 				Mdl = struct('coef',coef,'intercept',intercept);
-				system(['rm mat/tmp_' id '.mat mat/pythonsave_' id '.mat']);
+				fprintf('Make sure did not parallel run.\n');
 			end
 			ops.Mdl = Mdl;
 

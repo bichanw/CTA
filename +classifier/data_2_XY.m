@@ -30,8 +30,13 @@ data_nb = cellfun(@(x) x(~ops.exclude_id,:) / ops.rescale, spk_count,'UniformOut
 X = catcell(data_nb,2)'; % 90 cells * 100 trials response
 Y = catcell(arrayfun(@(i) i*ones(size(data_nb{i},2),1),1:numel(data_nb),'UniformOutput',false),1);
 
+% zscore by the first drinking period
+if isfield(ops,'zscore_by_time')
+	X = (X - ops.zscore_by_time.M(1,:)) ./ ops.zscore_by_time.V(1,:);
+end
 
-% add fake value to 0 variance dataset
+
+% add fake value to 0 variance dataset (no longer in use)
 ops.fake0 = getOr(ops,'fake0',0);
 for c = unique(Y')
 	trs = find(Y==c); % find all samples within a category

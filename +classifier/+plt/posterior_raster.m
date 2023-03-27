@@ -42,7 +42,8 @@ case 1 % sort by ranksum
 	end
 case 2 % sort by coefficient
 
-	ops = classifier.select_cells.by_coef(data,ops);
+	% ops = classifier.select_cells.by_coef(data,ops);
+	ops.novel_vs_fam = classifier.select_cells.non_zero_coef(data,ops);
 	% % front vs back
 	% d_coef = Mdl.coef(:,1) - Mdl.coef(:,2);
 	% [~,I] = sort(d_coef,'descend');
@@ -76,7 +77,10 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',200); 
 
 		% line for posterior probability
-		h = plot(ax(ii),ops.posterior_t,Posterior.*-5); h(2-data.port_is_water(2)).Color = [1 0 0]; h(2-data.port_is_water(1)).Color = [0 0 0]; h(3).Color(4) = 0.5;h(3).LineWidth = 0.7;
+		h = plot(ax(ii),ops.posterior_t,Posterior.*-5); h(2-data.port_is_water(2)).Color = [1 0 0]; h(2-data.port_is_water(1)).Color = [0 0 0]; 
+		if numel(h)>2 
+			h(3).Color(4) = 0.5;h(3).LineWidth = 0.7;
+		end
 
 
 		% add division for different cells
@@ -98,7 +102,7 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 	% change x axis to progress in time
 	set(gcf,'Position',[0 0 800 250*max_ax]);
 	arrayfun(@(i) set(ax(i),'XLim',[0 t_step]+t_start(i)+(ibatch-1)*t_step*max_ax,...
-							'YLim',[-6 numel(spk_2_plt)],...
+							'YLim',[-6 numel(spk_2_plt)+0.5],...
 				            'YTick',ytick_loc,'YTickLabel',['posterior',ops.novel_vs_fam.cell_cat_name]), 1:numel(ax))
 
 	% save figure

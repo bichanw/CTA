@@ -1,6 +1,47 @@
 classdef count_spk < handle
 
 	methods (Static)
+
+		function [spk_count,ops_zscore] = zscore(spk_count,t,t_partition,MV)
+			% zscore spk_count matrix by separate time period
+			% Input: MV (optional), {M, V} 1*2 cell, use already calculated mean / variance
+
+			% recount data
+			% spk_count - data; t - ops
+			if isstruct(spk_count) && isstruct(t)
+				[spk_count,ops_tmp] = classifier.count_spk.time_course(spk_count,t);
+				t = ops_tmp.posterior_t;
+			end
+
+			% output zscore mean variance or use input
+			if nargin > 3
+				ops_zscore.M = MV{1};
+				ops_zscore.V = MV{2};
+			else
+				ops_zscore.M = nan(numel(t_partition)+1,size(spk_count,1));
+				ops_zscore.V = ops_zscore.M;
+
+			end
+			% wrap partiiton with start and end time
+			t_partition = [t(1)-1 t_partition t(end)+1];
+			ops_zscore.t_partition = t_partition;
+			
+
+
+			% do z score
+			for ii = 1:(numel(t_partition)-1)
+				ind = (t>t_partition(ii))&(t<=t_partition(ii+1));
+				if nargin > 3
+					spk_count(:,ind) = (spk_count(:,ind)-ops_zscore.M(ii,:)') ./ ops_zscore.V(ii,:)';
+				else
+					[tmp,ops_zscore.M(ii,:),ops_zscore.V(ii,:)] = zscore(spk_count(:,ind)');
+					spk_count(:,ind) = tmp';
+				end
+			end
+
+
+		end
+
 		function [count,ops,events_oi] = events(data,ops)
 			% count spikes according to events for classifier
 
@@ -8,8 +49,15 @@ classdef count_spk < handle
 				ops = struct;
 			end
 			ops.tp      = getOr(ops,'tp',[0.1 0.7]);
-			ops.events  = {'front','rear','precue'}; % ops.events  = getOr(ops,'events',{'front','rear','precue'});
+			ops.events  = getOr(ops,'events',{'front','rear','precue'});; % ops.events  = 
 			events_oi   = {data.rewards.all.front,data.rewards.all.rear,[data.cues.rewarded.front; data.cues.rewarded.rear]};
+
+			% make sure only count spikes before cue onset
+			t_precue = -flip(ops.tp);
+			if t_precue(1,2) > 0
+				t_precue = t_precue - (t_precue(1,2));
+			end
+
 
 			% count spikes
 			clear count;
@@ -17,13 +65,17 @@ classdef count_spk < handle
 				for jj = 1:size(ops.tp,1)
 					[~,count{1}(jj,i,:)] = cal_raster(data.spikes{i}*1000, events_oi{1}*1000, ops.tp(jj,:) *1000);
 					[~,count{2}(jj,i,:)] = cal_raster(data.spikes{i}*1000, events_oi{2}*1000, ops.tp(jj,:) *1000);
-					[~,count{3}(jj,i,:)] = cal_raster(data.spikes{i}*1000, events_oi{3}*1000, -flip(ops.tp(jj,:)) *1000);
+					[~,count{3}(jj,i,:)] = cal_raster(data.spikes{i}*1000, events_oi{3}*1000, t_precue *1000);
 				end
 			end
 
 			% concatenate time windows
 			count = arrayfun(@(ii) reshape(count{ii},prod(size(count{ii},[1 2])),[]), 1:3,'UniformOutput',false);
-			% count{1}(i,j,k) -> tmp(2*(j-1)+i)
+
+			% remove baseline
+			if numel(ops.events)==2
+				count(3) = [];
+			end
 		end
 
 
@@ -45,19 +97,36 @@ classdef count_spk < handle
 			% load file
 			if exist(f_spk) || (nargin>2 && ~recalculate)
 				load(f_spk);
-			% count spike
-			else
-				spk_count = NaN(sum(~ops.exclude_id),numel(posterior_t_edges)); t = [];
-				cell_oi = find(~ops.exclude_id);
-				for ii = 1:numel(cell_oi)
-					[~,spk_count(ii,:),~,t] = running_average(data.spikes{cell_oi(ii)},[],diff(ops.tp),[],posterior_t_edges); 
+
+				% recalculate if not including all neurons
+				if size(spk_count,1)<numel(data.spikes)
+					spk_count = NaN(numel(data.spikes),numel(posterior_t_edges)); t = [];
+					for ii = 1:numel(data.spikes)
+						[~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
+					end
+					save(f_spk,'spk_count','t','bin_width');
 				end
 
-				save(f_spk,'spk_count','t','bin_width','cell_oi');
+			% count spikes again
+			else
+				spk_count = NaN(numel(data.spikes),numel(posterior_t_edges)); t = [];
+				for ii = 1:numel(data.spikes)
+					[~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
+				end
+				save(f_spk,'spk_count','t','bin_width');
+			end
+
+			% select subset
+			spk_count = spk_count(~ops.exclude_id,:);
+			cell_oi   = find(~ops.exclude_id);
+
+			% zscore by different time periods
+			if isfield(ops,'zscore_by_time')
+				[spk_count,ops_zscore] = classifier.count_spk.zscore(spk_count,t,ops.zscore_by_time.t_partition(2:end-1),{ops.zscore_by_time.M, ops.zscore_by_time.V});
 			end
 
 			% save info
-			ops.posterior_t = t;
+			ops.posterior_t  = t;
 			ops.posterior_w  = bin_width; 
 			ops.spk_count_id = cell_oi;
 

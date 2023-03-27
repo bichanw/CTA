@@ -5,6 +5,17 @@ classdef select_cells < handle
 	% by cell
 	methods (Static)
 
+		function ops = non_zero_zscore(ops)
+			ind_all = find(~ops.exclude_id);
+			ind_exlcude = find(logical(sum(ops.zscore_by_time.V==0,1)));
+
+			% exclude cell
+			ops.exclude_id(ind_all(ind_exlcude)) = true;
+			% clean up 
+			ops.zscore_by_time.M(:,ind_exlcude) = [];
+			ops.zscore_by_time.V(:,ind_exlcude) = [];
+		end
+
 		function ind = by_brain_region(data,ops)
 			% Input:  ops - either ops struct of cells of regions of interest
 			% Output: ind - either cell (multiple roi) or vector (1 roi)
@@ -34,17 +45,27 @@ classdef select_cells < handle
 			if ~isfield(ops,'Mdl')
 				[~,ops] = ops.classifier.train(data,ops);
 			end
-			d_coef = ops.Mdl.coef(:,1) - ops.Mdl.coef(:,2);
+			ndim = size(ops.Mdl.coef,2);
+			if ndim>1
+				d_coef = ops.Mdl.coef(:,1) - ops.Mdl.coef(:,2);
+			else
+				d_coef = -ops.Mdl.coef;
+			end
 
-			cell_order.ordered_id    = [];
+			cell_order.ordered_id  = [];
 			cell_order.ordered_div = 0;
 			for ii = 1:2
 				% find cells
-				ind = find(ops.Mdl.coef(:,ii)~=0);
+				if ndim > 1
+					ind = find(ops.Mdl.coef(:,ii)~=0);
+				else
+					ind = find(d_coef * (-2*ii+3) > 0);
+				end
 
 				% rank by d_coef (reverse for rear preferred)
 				[~,I] = sort(d_coef(ind) * (-2*ii+3),'descend');
-				cell_order.ordered_id  = [cell_order.ordered_id; ops.decoder_id(ind(I))'];
+
+				cell_order.ordered_id  = [cell_order.ordered_id ops.decoder_id(ind(I))];
 				cell_order.ordered_div = [cell_order.ordered_div numel(cell_order.ordered_id)];
 			end
 
@@ -82,7 +103,7 @@ classdef select_cells < handle
 			ops.novel_vs_fam.cell_cat_name = {'front higher','back higher'};
 		end
 
-		function ops = novel_vs_fam(data,ops)
+		function [ops,cell_order] = novel_vs_fam(data,ops)
 			% count spikes 
 			[spk_count,ops,events_oi] = classifier.count_spk.events(data,ops);
 
@@ -120,6 +141,7 @@ classdef select_cells < handle
 			n_sig = getOr(ops.novel_vs_fam,'n_sig',15);
 			ordered_id  = [];
 			ordered_div = 0; % category divider
+			include_id  = find(~getOr(ops,'exclude_id',false(numel(data.spikes),1)));
 			for ii = 1:3 % 3 category of interest
 				% pick out cells
 				ind = find(cell_cat==ii);
@@ -134,10 +156,11 @@ classdef select_cells < handle
 				if ii < 3
 					tmp = tmp(classifier.select_cells.rank_by_peak(data.spikes(tmp),events_oi{ii},ops));
 				end
+				tmp = tmp(ismember(tmp,include_id));
 
 				ordered_id = [ordered_id; tmp];
 				% keep divider info
-				ordered_div = [ordered_div ordered_div(end)+n];
+				ordered_div = [ordered_div ordered_div(end)+numel(tmp)];
 			end
 
 			% add non significant cells
@@ -153,6 +176,9 @@ classdef select_cells < handle
 			ops.novel_vs_fam.cell_cat = cell_cat;
 			ops.novel_vs_fam.cell_cat_name = {'front higher','back higher','different from control','non significant'};
 			
+			if nargout > 1
+				cell_order = ops.novel_vs_fam;
+			end
 			
 		end
 
@@ -181,6 +207,7 @@ classdef select_cells < handle
 			% test for significance
 			n_cells = size(spk_count{1},1);
 			pairs   = [1 3;2 3;1 2];
+			% pairs   = [1 2];
 			is_sig  = nan(n_cells,size(pairs,1));
 			for ii = 1:n_cells
 				for jj = 1:size(pairs,1)
