@@ -206,8 +206,8 @@ classdef select_cells < handle
 
 			% test for significance
 			n_cells = size(spk_count{1},1);
-			pairs   = [1 3;2 3;1 2];
-			% pairs   = [1 2];
+			% pairs   = [1 3;2 3;1 2];
+			pairs   = [1 2];
 			is_sig  = nan(n_cells,size(pairs,1));
 			for ii = 1:n_cells
 				for jj = 1:size(pairs,1)

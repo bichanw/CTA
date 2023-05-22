@@ -18,10 +18,15 @@ ops.plot = struct();
 ops.plot.slow_firing_cell = 'novel_vs_fam'; %{'novel_vs_fam','non_zero_coef'}
 
 
-% do zscore based on separate time scale
-% [~,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
-% ops = classifier.select_cells.non_zero_zscore(ops); % clean up cells with 0 variance
-ops.mnr.zscore = true; % do not do separate zscore
+switch 1
+case 0
+	% do zscore based on separate time scale
+	[spk_count_zscored,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+	[~,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+	ps = classifier.select_cells.non_zero_zscore(ops); % clean up cells with 0 variance
+case 1
+	ops.mnr.zscore = true; % do not do separate zscore
+end
 
 
 % remove baseline in the classifier

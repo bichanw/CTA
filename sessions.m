@@ -11,5 +11,10 @@ Sessions.subject = {};
 
 
 % 2023 Feb cohort
-Sessions.session = [Sessions.session repmat(datetime(2023,2,14),1,4)];
-Sessions.subject = [Sessions.subject repmat({'273','274','279','280'},1,1)];
+% Sessions.session = [Sessions.session repmat(datetime(2023,2,14),1,4)];
+% Sessions.subject = [Sessions.subject repmat({'273','274','279','280'},1,1)];
+
+
+% 2023 Apr cohort
+Sessions.session = [Sessions.session repmat(datetime(2023,4,19),1,4)];
+Sessions.subject = [Sessions.subject repmat({'302','304','305','306'},1,1)];

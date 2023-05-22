@@ -45,6 +45,7 @@ classdef load_data < handle
 				ops = struct();
 			end
 
+
 			% main folder where data is stored
 			folder = sprintf('/jukebox/witten/Chris/data/neuropixels_cta/calca_%s/%s',subject,datestr(session,'yyyy-mm-dd'));
 
@@ -58,8 +59,12 @@ classdef load_data < handle
 					data = struct();
 				end
 			% front / rare - water / grape pair
-				if session < datetime(2023,1,1)
-					port_f = dir(sprintf('%s/reward_location_*.txt',folder));
+				if session < datetime(2023,4,1)
+					if session < datetime(2023,1,1)
+						port_f = dir(sprintf('%s/reward_location_*.txt',folder));
+					else
+						port_f = dir(sprintf('%s/*_ports.txt',folder));
+					end
 					f = fopen([port_f.folder '/' port_f.name],'r');
 					C = textscan(f,'%s %s %s\n');
 					data.port_is_water = [false false];
@@ -68,23 +73,18 @@ classdef load_data < handle
 					else
 						data.port_is_water(1) = true;
 					end
-				else
-					port_f = dir(sprintf('%s/*_ports.txt',folder));
-					f = fopen([port_f.folder '/' port_f.name],'r');
-					C = textscan(f,'%s %s %s %s');
-
-					% front novel
-					if (strcmpi(C{1},'Novel')&&strcmpi(C{2},'Front,')) || (strcmpi(C{1},'Water')&&strcmpi(C{2},'Rear,'))
-						data.port_is_water = [false true];
-					% back novel
-					else
+					fclose(f);
+				else % 2023 apr sessions
+					fprintf('front is %s\n',data.ports.front);
+					if strcmpi(data.ports.front,'water')
 						data.port_is_water = [true false];
+					else
+						data.port_is_water = [false true];
 					end
 				end
 				tmp = [1 0 0; 0 0 0];
 				data.port_color = tmp(data.port_is_water+1,:);
 
-				fclose(f);
 			% LiCl injection time
 				licl_f = dir(sprintf('%s/licl_time*.txt',folder));
 				if ~isempty(licl_f)
@@ -93,7 +93,7 @@ classdef load_data < handle
 					data.licl = A(1)*60 + A(2); % in seconds
 				end
 			% novel / familiar preference based on 
-				if exist([folder '/psths.mat']);
+				if exist([folder '/psths.mat'])
 					load([folder '/psths.mat']);
 					data.PSTHdata = PSTHdata;
 				end
@@ -141,7 +141,13 @@ classdef load_data < handle
 		function folder = ks_folder(session,subject)
 			folder = sprintf('/jukebox/witten/Chris/data/neuropixels_cta/calca_%s/%s',subject,datestr(session,'yyyy-mm-dd'));
 			if session>datetime(2022,11,21)
-				folder = [folder filesep 'catgt_cz_npxl_g0'];
+
+				% one special session
+				if strcmpi(subject,'304')
+					folder = [folder filesep 'catgt_cz_npxl_g1'];
+				else
+					folder = [folder filesep 'catgt_cz_npxl_g0'];
+				end
 			else
 				folder = [folder '/pykilosortfiles/results'];
 			end

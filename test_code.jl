@@ -1,7 +1,4 @@
 import PPSeq
-
-# Import PPSeq
-# import PPSeq
 const seq = PPSeq
 
 # Other Imports
@@ -9,6 +6,9 @@ import PyPlot: plt
 import DelimitedFiles: readdlm
 import Random
 import StatsBase: quantile
+
+println("Runnign CTA/test_code.jl")
+flush(stdout)
 
 
 # read spikes
@@ -39,7 +39,7 @@ config = Dict(
     # Model hyperparameters
     :num_sequence_types =>  2,
     :seq_type_conc_param => 1.0,
-    :seq_event_rate => 0.25,
+    :seq_event_rate => 0.04,
 
     :mean_event_amplitude => 100.0,
     :var_event_amplitude => 1000.0,
@@ -53,20 +53,32 @@ config = Dict(
     :max_warp => 1.0,
     :warp_variance => 1.0,
 
-    :mean_bkgd_spike_rate => 30.0,
-    :var_bkgd_spike_rate => 30.0,
+    :mean_bkgd_spike_rate => 150.0, # is this for all neurons
+    :var_bkgd_spike_rate => 50.0,
     :bkgd_spikes_conc_param => 0.3,
     :max_sequence_length => Inf,
     
-    # MCMC Sampling parameters.
+    # # MCMC Sampling parameters.
+    # :num_anneals => 10,
+    # :samples_per_anneal => 100,
+    # :max_temperature => 40.0,
+    # :save_every_during_anneal => 10,
+    # :samples_after_anneal => 2000,
+    # :save_every_after_anneal => 10,
+    # :split_merge_moves_during_anneal => 10,
+    # :split_merge_moves_after_anneal => 10,
+    # :split_merge_window => 1.0,
+
+    # distributed MCMC
+    :num_threads => 10,  # <--- This is the key parameter to include if you want to run parallel MCMC
     :num_anneals => 10,
     :samples_per_anneal => 100,
     :max_temperature => 40.0,
     :save_every_during_anneal => 10,
     :samples_after_anneal => 2000,
     :save_every_after_anneal => 10,
-    :split_merge_moves_during_anneal => 10,
-    :split_merge_moves_after_anneal => 10,
+    :split_merge_moves_during_anneal => 0,  # SPLIT / MERGE not implemented for distributed MCMC
+    :split_merge_moves_after_anneal => 0,   # SPLIT / MERGE not implemented for distributed MCMC
     :split_merge_window => 1.0,
 
 );

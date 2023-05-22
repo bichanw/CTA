@@ -8,7 +8,8 @@ extension = 'png';
 
 sessions; % initialize sessions to run
 for iSession = 1:numel(Sessions.subject)
-% for iSession = 3
+% for iSession = 4
+
 
 	% load data
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
@@ -41,8 +42,8 @@ for iSession = 1:numel(Sessions.subject)
 
 
 	% ----- session level plot ----- %
-	% ops = struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)); classifier.plt.psth(data,ops);
-	% ops = struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)); classifier.plt.raster(data,struct());
+	% classifier.plt.psth(data,struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)));
+	% classifier.plt.raster(data,struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)));
 	% classifier.plt.cv(data,ops,sprintf('all_%s_',ops.mnr.penalty));
 	% ops = struct('novel_vs_fam',struct('n_sig',15),'posterior_method',2);classifier.plt.posterior_raster(data,[],ops,'chris_thresholded_'); % plot posterior
 	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
@@ -57,12 +58,11 @@ for iSession = 1:numel(Sessions.subject)
 	% % for lambda = [1e-4 1e-2 1]
 	for lambda = 1
 		ops.mnr.lambda = lambda;
-		prefix = sprintf('novel_fam_diff_sepzscore_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
+		prefix = sprintf('novel_fam_diff_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
 		% prefix = sprintf('%s_%s_%.1e_',roi{1},ops.mnr.penalty,ops.mnr.lambda);
-		% ops = classifier.plt.laser_posterior(data,ops,prefix);
-		classifier.plt.slow_firing(data,ops,prefix);
-		% return
-		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+		ops = classifier.plt.slow_firing(data,ops,prefix);
+		classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+		ops = classifier.plt.laser_posterior(data,ops,prefix);
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
 	end
@@ -88,7 +88,7 @@ return
 	final_assignments = h5read(f,'/final_assignments');
 	final_events      = h5read(f,'/final_events');
 	
-
+	data = load_data.all(datetime(2023,2,14),'280');
 
 	% assign spikes to event type
 	[~,Locb]   = ismember(final_assignments,final_events.assignment_id);
@@ -122,6 +122,13 @@ return
 
 
 	export_fig tmp.png -m3
+
+
+% check julia firing rate
+	id = unique(clu);
+	dt = max(t)-min(t);
+
+	fr = arrayfun(@(ii) sum(clu==ii)/dt, id);
 
 
 % save data for julia
