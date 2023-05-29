@@ -9,23 +9,22 @@ ops.mnr.penalty = 'l1';
 ops.novel_vs_fam.n_sig = 15;
 ops = classifier.select_cells.novel_vs_fam(data,ops);
 % ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
-% ops.exclude_method = {'novel_vs_fam'};
+ops.exclude_method = {'novel_vs_fam'};
 ops = classifier.select_cells.sig_resp(data,ops); % select all significant
-
 
 % some plotting options
 ops.plot = struct();
 ops.plot.slow_firing_cell = 'novel_vs_fam'; %{'novel_vs_fam','non_zero_coef'}
 
 
-switch 1
-case 0
-	% do zscore based on separate time scale
-	[spk_count_zscored,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+switch 0
+case 0 % do zscore based on separate time scale
+	% [spk_count_zscored,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
 	[~,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
-	ps = classifier.select_cells.non_zero_zscore(ops); % clean up cells with 0 variance
-case 1
-	ops.mnr.zscore = true; % do not do separate zscore
+	ops = classifier.select_cells.non_zero_zscore(ops); % clean up cells with 0 variance
+	ops.mnr.zscore = false;
+case 1 % zscore based on the same mean / variance
+	ops.mnr.zscore = true; 
 end
 
 

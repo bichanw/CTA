@@ -35,7 +35,7 @@ end
 
 
 % order cells for plotting raster
-switch 2
+switch 1
 case 1 % sort by ranksum
 	if ~isfield(ops,'novel_vs_fam') || ~isfield(ops.novel_vs_fam,'ordered_id')
 		ops = classifier.select_cells.novel_vs_fam(data,ops);

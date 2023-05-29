@@ -38,25 +38,25 @@ config = Dict(
 
     # Model hyperparameters
     :num_sequence_types =>  2,
-    :seq_type_conc_param => 1.0,
-    :seq_event_rate => 0.04,
+    :seq_type_conc_param => 10.0,
+    :seq_event_rate => 0.03,
 
-    :mean_event_amplitude => 100.0,
-    :var_event_amplitude => 1000.0,
+    :mean_event_amplitude => 50.0,
+    :var_event_amplitude => 30.0,
     
-    :neuron_response_conc_param => 0.1,
-    :neuron_offset_pseudo_obs => 1.0,
-    :neuron_width_pseudo_obs => 1.0,
-    :neuron_width_prior => 0.5,
+    :neuron_response_conc_param => 0.5,
+    :neuron_offset_pseudo_obs => 0.5,
+    :neuron_width_pseudo_obs => 6,
+    :neuron_width_prior => 0.15,
     
     :num_warp_values => 1,
     :max_warp => 1.0,
     :warp_variance => 1.0,
 
-    :mean_bkgd_spike_rate => 150.0, # is this for all neurons
-    :var_bkgd_spike_rate => 50.0,
+    :mean_bkgd_spike_rate => 50.0, # is this for all neurons
+    :var_bkgd_spike_rate => 10.0,
     :bkgd_spikes_conc_param => 0.3,
-    :max_sequence_length => Inf,
+    :max_sequence_length => 3.0,
     
     # # MCMC Sampling parameters.
     # :num_anneals => 10,
@@ -103,6 +103,7 @@ final_assignments = results[:assignment_hist][:, end]
 using JLD2
 pwd()
 jldsave("mat/"*filename*"_assignments.jld2";final_assignments,final_events)
+jldsave("mat/"*filename*"_all.jld2";results,config)
 
 
 # Helpful utility function that sorts the neurons to reveal sequences.

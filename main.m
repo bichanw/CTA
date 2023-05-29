@@ -13,7 +13,7 @@ for iSession = 1:numel(Sessions.subject)
 
 	% load data
 	data = load_data.all(Sessions.session(iSession),Sessions.subject{iSession});
-
+	
 	% parameter section
 	params;
 
@@ -58,7 +58,7 @@ for iSession = 1:numel(Sessions.subject)
 	% % for lambda = [1e-4 1e-2 1]
 	for lambda = 1
 		ops.mnr.lambda = lambda;
-		prefix = sprintf('novel_fam_diff_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
+		prefix = sprintf('novel_fam_diff_all_sepzscore_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
 		% prefix = sprintf('%s_%s_%.1e_',roi{1},ops.mnr.penalty,ops.mnr.lambda);
 		ops = classifier.plt.slow_firing(data,ops,prefix);
 		classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
@@ -88,7 +88,6 @@ return
 	final_assignments = h5read(f,'/final_assignments');
 	final_events      = h5read(f,'/final_events');
 	
-	data = load_data.all(datetime(2023,2,14),'280');
 
 	% assign spikes to event type
 	[~,Locb]   = ismember(final_assignments,final_events.assignment_id);
@@ -118,10 +117,14 @@ return
 
 	% plot other events
 	% ?
+	data = load_data.all(datetime(2023,2,14),'280');
 	h = classifier.plt.scatter_event(data,ax,numel(cell_oi)+1);
 
+	for t_start = 300:100:900
+		set(ax,'XLim',[0 100] + t_start);
+		export_fig(sprintf('results/ppseq_%d.png',t_start),'-r300');
+	end
 
-	export_fig tmp.png -m3
 
 
 % check julia firing rate
@@ -137,8 +140,9 @@ return
 
 	[~,cell_order] = classifier.select_cells.novel_vs_fam(data,ops);
 	ops.exclude_id = ~ismember(1:numel(data.spikes),cell_order.ordered_id(1:(cell_order.ordered_div(3))));
-
-
+	[count,ops,events_oi] = classifier.count_spk.events(data,ops);
+	cellfun(@(x) sum(x(:)) / size(x,1) / diff(ops.tp), count)
+	
 	clu = [];
 	t   = [];
 	toi = [300 1000];
@@ -174,5 +178,25 @@ ax = np; imagesc(squeeze(tmp(1,:,:)));colorbar;ef;
 
 
 
+% gamma distribution
+	m = 50; v = 10;
+	b = m / v;
+	a = m * b;
+	x = 30:70;
+	y = gampdf(x,a,1/b);
+	ax = np; plot(x,y);ef;
+
+% scaled inverse-chi-square simulation
+	v = 6;
+	t2 = 0.15;
+	x = 0:0.01:1;
+	f = (t2*v/2)^(v/2)/gamma(v/2) * x.^(-v/2-1) .* exp(-t2*v./(2*x));
+	ax = np; plot(x,f);ef;
 
 
+% 2d dirichlet simulation
+	x = 0:0.01:1;
+	conc_param = 10.0;
+	y = (x - x.^2).^(conc_param-1);
+	y = y ./ sum(y);
+	ax = np; plot(x,y);export_fig tmp.png -r300;
