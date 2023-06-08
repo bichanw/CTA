@@ -38,11 +38,11 @@ config = Dict(
 
     # Model hyperparameters
     :num_sequence_types =>  2,
-    :seq_type_conc_param => 10.0,
-    :seq_event_rate => 0.03,
+    :seq_type_conc_param => 5.0,
+    :seq_event_rate => 0.04,
 
     :mean_event_amplitude => 50.0,
-    :var_event_amplitude => 30.0,
+    :var_event_amplitude => 10.0,
     
     :neuron_response_conc_param => 0.5,
     :neuron_offset_pseudo_obs => 0.5,
@@ -54,32 +54,32 @@ config = Dict(
     :warp_variance => 1.0,
 
     :mean_bkgd_spike_rate => 50.0, # is this for all neurons
-    :var_bkgd_spike_rate => 10.0,
+    :var_bkgd_spike_rate => 5.0,
     :bkgd_spikes_conc_param => 0.3,
-    :max_sequence_length => 3.0,
+    :max_sequence_length => Inf,
     
-    # # MCMC Sampling parameters.
-    # :num_anneals => 10,
-    # :samples_per_anneal => 100,
-    # :max_temperature => 40.0,
-    # :save_every_during_anneal => 10,
-    # :samples_after_anneal => 2000,
-    # :save_every_after_anneal => 10,
-    # :split_merge_moves_during_anneal => 10,
-    # :split_merge_moves_after_anneal => 10,
-    # :split_merge_window => 1.0,
-
-    # distributed MCMC
-    :num_threads => 10,  # <--- This is the key parameter to include if you want to run parallel MCMC
+    # MCMC Sampling parameters.
     :num_anneals => 10,
     :samples_per_anneal => 100,
     :max_temperature => 40.0,
     :save_every_during_anneal => 10,
     :samples_after_anneal => 2000,
     :save_every_after_anneal => 10,
-    :split_merge_moves_during_anneal => 0,  # SPLIT / MERGE not implemented for distributed MCMC
-    :split_merge_moves_after_anneal => 0,   # SPLIT / MERGE not implemented for distributed MCMC
+    :split_merge_moves_during_anneal => 10,
+    :split_merge_moves_after_anneal => 10,
     :split_merge_window => 1.0,
+
+    # # distributed MCMC
+    # :num_threads => 10,  # <--- This is the key parameter to include if you want to run parallel MCMC
+    # :num_anneals => 10,
+    # :samples_per_anneal => 100,
+    # :max_temperature => 40.0,
+    # :save_every_during_anneal => 10,
+    # :samples_after_anneal => 2000,
+    # :save_every_after_anneal => 10,
+    # :split_merge_moves_during_anneal => 0,  # SPLIT / MERGE not implemented for distributed MCMC
+    # :split_merge_moves_after_anneal => 0,   # SPLIT / MERGE not implemented for distributed MCMC
+    # :split_merge_window => 1.0,
 
 );
 
@@ -183,4 +183,10 @@ plt.savefig("results/FR.png");
 # plt.xlabel("timebins")
 # plt.colorbar();
 
+
+quit()
+
+
+
+# read results
 

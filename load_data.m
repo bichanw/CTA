@@ -49,7 +49,6 @@ classdef load_data < handle
 			% main folder where data is stored
 			folder = sprintf('/jukebox/witten/Chris/data/neuropixels_cta/calca_%s/%s',subject,datestr(session,'yyyy-mm-dd'));
 
-
 			% ----- event data -----
 			% main struct
 				event_f = [dir(sprintf('%s/data_for_bichan.mat',folder)), dir(sprintf('%s/calca_%s_%s.mat',folder,subject,datestr(session,'yyyy-mm-dd')))];
@@ -60,11 +59,11 @@ classdef load_data < handle
 				end
 			% front / rare - water / grape pair
 				if session < datetime(2023,4,1)
-					if session < datetime(2023,1,1)
-						port_f = dir(sprintf('%s/reward_location_*.txt',folder));
-					else
+					% if session < datetime(2023,1,1)
 						port_f = dir(sprintf('%s/*_ports.txt',folder));
-					end
+					% else
+						% port_f = dir(sprintf('%s/reward_location_*.txt',folder));
+					% end
 					f = fopen([port_f.folder '/' port_f.name],'r');
 					C = textscan(f,'%s %s %s\n');
 					data.port_is_water = [false false];

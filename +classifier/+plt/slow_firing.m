@@ -29,11 +29,11 @@ bin_width = 60;
 ops.plot = getOr(ops,'plot',struct());
 ops.plot.slow_firing_cell = getOr(ops.plot,'slow_firing_cell','novel_vs_fam');
 switch ops.plot.slow_firing_cell
-case 'novel_vs_fam' % order them by novel vs fam results
-	ops.novel_vs_fam.n_sig = Inf;
-	[~,cell_group_plt] = classifier.select_cells.novel_vs_fam(data,ops);
-case 'non_zero_coef' % plot firing rate of the non-zero coef
-	cell_group_plt = classifier.select_cells.non_zero_coef(data,ops);
+	case 'novel_vs_fam' % order them by novel vs fam results
+		ops.novel_vs_fam.n_sig = Inf;
+		[~,cell_group_plt] = classifier.select_cells.novel_vs_fam(data,ops);
+	case 'non_zero_coef' % plot firing rate of the non-zero coef
+		cell_group_plt = classifier.select_cells.non_zero_coef(data,ops);
 end
 [~,ind] = ismember(cell_group_plt.ordered_id(1:cell_group_plt.ordered_div(3)),ops.decoder_id);
 slow_change = slow_change(:,ind(ind~=0));
@@ -42,7 +42,7 @@ prefix = [ops.plot.slow_firing_cell '_' prefix];
 
 
 % count posterior peaks
-[~,locs] = arrayfun(@(ii) findpeaks(Posterior(:,ii),'MinPeakHeight',0.3), 1:2, 'UniformOutput',false);
+[~,locs] = arrayfun(@(ii) findpeaks(Posterior(:,ii),'MinPeakHeight',0.5), 1:2, 'UniformOutput',false);
 [~,npeaks] = running_average(ops.posterior_t(locs{1}),[],bin_width,[],slow_edges);
 [~,npeaks(:,end+1)] = running_average(ops.posterior_t(locs{2}),[],bin_width,[],slow_edges);
 % average posterior
@@ -84,6 +84,7 @@ ax = np(3,1);
 
 arrayfun(@(h) set(h,'XLim',t([1 end])), ax);
 set(gcf,'Position',[0 0 400 400]);
+title(ax(1),sprintf('%s %s',data.subject,datestr(data.session,'YYmmdd')));
 export_fig(sprintf('results/%sslow_firing_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
 
 
