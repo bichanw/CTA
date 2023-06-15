@@ -5,27 +5,44 @@ prefix = '';
 ops.mnr.lambda = 1;
 ops.mnr.penalty = 'l1';
 
-% select significant cells
+
+% amplitude cutoff -- need to be at the end of script after other criterion screening!!!
+	ops.exclude_method = {'amplitude'};
+	ops.amplitude_cutoff = getOr(ops,'amplitude_cutoff',20);
+	if ops.amplitude_cutoff > 0
+		load(sprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV.mat',data.subject,ops.amplitude_cutoff))
+		ops.exclude_id = ~ismember(data.cids,[cluster_assignments.novel, cluster_assignments.water, cluster_assignments.neither])';
+		% ops.exclude_id = ~ismember(data.cids,[cluster_assignments.novel, cluster_assignments.water])';
+		% ops.exclude_id = ~ismember(data.cids,[cluster_assignments.novel, cluster_assignments.water])';
+	end
+% or selecting cells that have a significant responses
+	% ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
+	% ops = classifier.select_cells.sig_resp(data,ops); % select all significant
+
+% categorizing cells for plotting purposes
 ops.novel_vs_fam.n_sig = 15;
 ops = classifier.select_cells.novel_vs_fam(data,ops);
-% ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
-ops.exclude_method = {'novel_vs_fam'};
-ops = classifier.select_cells.sig_resp(data,ops); % select all significant
-
+	
 % some plotting options
 ops.plot = struct();
 ops.plot.slow_firing_cell = 'novel_vs_fam'; %{'novel_vs_fam','non_zero_coef'}
 
 
-switch 0
-case 0 % do zscore based on separate time scale
+% zscore
+ops.zscore_method = 'all';
+switch ops.zscore_method
+case 'separate' % do zscore based on separate time scale
 	% [spk_count_zscored,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
 	[~,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
 	ops = classifier.select_cells.non_zero_zscore(ops); % clean up cells with 0 variance
 	ops.mnr.zscore = false;
-case 1 % zscore based on the same mean / variance
+case 'all' % zscore based on the same mean / variance
 	ops.mnr.zscore = true; 
 end
+
+
+
+
 
 
 % remove baseline in the classifier

@@ -25,7 +25,7 @@ if getOr(ops,'if_exclude_0var',false)
 	ops.exclude_method = [{'0 variance'}, getOr(ops,'exclude_method',{})];
 end
 
-% create table and run classifier
+% create table
 data_nb = cellfun(@(x) x(~ops.exclude_id,:) / ops.rescale, spk_count,'UniformOutput',false);
 X = catcell(data_nb,2)'; % 90 cells * 100 trials response
 Y = catcell(arrayfun(@(i) i*ones(size(data_nb{i},2),1),1:numel(data_nb),'UniformOutput',false),1);

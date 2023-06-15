@@ -106,15 +106,22 @@ classdef select_cells < handle
 		function [ops,cell_order] = novel_vs_fam(data,ops)
 			% count spikes 
 			[spk_count,ops,events_oi] = classifier.count_spk.events(data,ops);
+			ops.exclude_id = getOr(ops,'exclude_id',false(size(spk_count{1},1),1));
 
 			% categorize cell based on rank sum
 			n_cells  = size(spk_count{1},1);
 			cell_cat = nan(n_cells,1); % cell category - 0 - insignificant
 			zval     = cell_cat;
 			for ii = 1:n_cells
+
+				% check if already excluded
+				if ops.exclude_id(ii)
+					cell_cat(ii) = 0;
+					continue;
+				end
+
 				% novel vs familiar
 				[p,is_sig,stats] = ranksum(spk_count{1}(ii,:),spk_count{2}(ii,:));
-
 
 				% if response is different
 				if is_sig

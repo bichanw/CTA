@@ -38,8 +38,8 @@ classdef load_data < handle
 
 			% default example
 			if nargin == 0
-				session = datetime(2022,12,4);
-				subject = '001';
+				session = datetime(2023,2,14);
+				subject = '280';
 			end
 			if nargin < 3
 				ops = struct();
@@ -59,11 +59,7 @@ classdef load_data < handle
 				end
 			% front / rare - water / grape pair
 				if session < datetime(2023,4,1)
-					% if session < datetime(2023,1,1)
-						port_f = dir(sprintf('%s/*_ports.txt',folder));
-					% else
-						% port_f = dir(sprintf('%s/reward_location_*.txt',folder));
-					% end
+					port_f = dir(sprintf('%s/*_ports.txt',folder));
 					f = fopen([port_f.folder '/' port_f.name],'r');
 					C = textscan(f,'%s %s %s\n');
 					data.port_is_water = [false false];
@@ -81,7 +77,7 @@ classdef load_data < handle
 						data.port_is_water = [false true];
 					end
 				end
-				tmp = [1 0 0; 0 0 0];
+				tmp = [1 0 0; 0.5  0.5 1];
 				data.port_color = tmp(data.port_is_water+1,:);
 
 			% LiCl injection time
@@ -107,7 +103,6 @@ classdef load_data < handle
 			% end
 			data_f = load_data.ks_folder(session,subject);
 			data = load_data.spike_ks(data_f,data,ops);
-
 
 
 			% ----- video data -----
