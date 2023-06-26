@@ -1,14 +1,14 @@
 clear all; clc; close all; addpath('helpfun');
 
 % ----- individual cell plotting ----- %
-% parameters
-plt_name = 'FR';
-extension = 'png';
+% % parameters
+% plt_name = 'FR';
+% extension = 'png';
 
 
 sessions; % initialize sessions to run
-% for iSession = 1:numel(Sessions.subject)
-for iSession = 2
+for iSession = 1:numel(Sessions.subject)
+% for iSession = [1, 4, 5, 7]
 
 
 	% load data
@@ -16,7 +16,7 @@ for iSession = 2
 	
 	% parameter section
 	params;
-
+	
 	% ----- individual cell level plot ----- %
 	% % plotting initiation
 	% cells_2_plt = 1:numel(data.spikes); 
@@ -58,22 +58,25 @@ for iSession = 2
 	% % for lambda = [1e-4 1e-2 1]
 	for lambda = 1
 		ops.mnr.lambda = lambda;
-		prefix = sprintf('novel_fam_diff_all_%s_%.1e_',ops.mnr.penalty,ops.mnr.lambda);
+		prefix = sprintf('amp%d_%dcat_%s_%s_%.1e_',ops.amplitude_cutoff,numel(ops.amplitude_cat),ops.zscore_method,ops.mnr.penalty,ops.mnr.lambda);
 		% prefix = sprintf('%s_%s_%.1e_',roi{1},ops.mnr.penalty,ops.mnr.lambda);
 		% ops = classifier.plt.slow_firing(data,ops,prefix);
-		classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
-		% ops = classifier.plt.laser_posterior(data,ops,prefix);
+		% return
+		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+		ops = classifier.plt.laser_posterior(data,ops,prefix);
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
 	end
 	% classifier.plt.cv(data,ops,prefix);
+	% return
 end
 
 % save processing setting
 saveops(ops);
 
-
-
+append_script(['results/' prefix],true);
+% append_script(['results/novel_vs_fam_' prefix],true);
+fprintf('Finish running %s\n',prefix);
 return
 
 

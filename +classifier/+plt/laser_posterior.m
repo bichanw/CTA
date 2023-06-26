@@ -23,31 +23,43 @@ Posterior = ops.classifier.predict(ops.Mdl,spk_count',ops);
 
 % time locked to laser onset
 if isstruct(data.laser)
-	% in develop
+	% in development
 	error('need to add onsets / offsets conversion');
 else
-	
 	% onset and offset
-	[resp,resp_err,tbin] = psth_time_series(Posterior,data.laser(:,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
-
+	% [resp,resp_err,tbin] = psth_time_series(Posterior,data.laser(:,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
+	[resp(1,:,:),resp_err(1,:,:),tbin] = psth_time_series(Posterior,data.laser(1:100,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
+	[resp(2,:,:),resp_err(2,:,:),tbin] = psth_time_series(Posterior,data.laser(end-99:end,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
+	[resp(3,:,:),resp_err(3,:,:),tbin] = psth_time_series(Posterior,data.laser(:,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 end
 
-ax = np;
 Colors = getOr(data,'port_color',[1 0 0; 0 0 0]);
-for ii=1:2
-	h(ii).shade = fill(ax,[tbin flip(tbin)],[squeeze(resp(:,ii))+squeeze(resp_err(:,ii)); flip(squeeze(resp(:,ii))-squeeze(resp_err(:,ii)))]',Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none');
-	h(ii).h_m   = plot(ax,tbin,squeeze(resp(:,ii)),'Color',Colors(ii,:),'LineWidth',1.5);
+% ax = np;
+% for ii=1:2
+% 	h(ii).shade = fill(ax,[tbin flip(tbin)],[squeeze(resp(:,ii))+squeeze(resp_err(:,ii)); flip(squeeze(resp(:,ii))-squeeze(resp_err(:,ii)))]',Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none');
+% 	h(ii).h_m   = plot(ax,tbin,squeeze(resp(:,ii)),'Color',Colors(ii,:),'LineWidth',1.5);
+% end
+ax = np(3,1);
+for iplot = 1:size(resp,1)
+	for ii=1:2
+		h(ii).shade = fill(ax(iplot),[tbin flip(tbin)],[squeeze(resp(iplot,:,ii))+squeeze(resp_err(iplot,:,ii)), flip(squeeze(resp(iplot,:,ii))-squeeze(resp_err(iplot,:,ii)))]',Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none');
+		h(ii).h_m   = plot(ax(iplot),tbin,squeeze(resp(iplot,:,ii)),'Color',Colors(ii,:),'LineWidth',1.5);
+	end
 end
+align_ax(ax,true,true);
+
+set(ax(3),'XLim',tbin([1 end]),'XTick',[0 1.5 3]);
+ax(3).XTickLabel(ax(3).XTick==0) = {'onset'}; 
+ax(3).XTickLabel(ax(3).XTick==3) = {'offset'};
 
 
-set(ax,'XLim',tbin([1 end]),'XTick',[0 1.5 3]);
-ax.XTickLabel(ax.XTick==0) = {'onset'}; 
-ax.XTickLabel(ax.XTick==3) = {'offset'};
+tmp = {'novel','fam'}; legend(ax(1),[h(1).h_m h(2).h_m],tmp(data.port_is_water+1),'box','off');
+xlabel(ax(3),'time (s)'); ylabel(ax(3),'average posteior');
 
 
-tmp = {'novel','fam'}; legend(ax,[h(1).h_m h(2).h_m],tmp(data.port_is_water+1),'box','off');
-xlabel(ax(1),'time (s)'); ylabel(ax(1),'average posteior');
-title(ax(1),{['calca\_' data.subject],sprintf('step: %d ms',bin_width*1e3)});
-set(gcf,'Position',[0 0 200 150]);
+title(ax(1),{['calca\_' data.subject],sprintf('step: %d ms',bin_width*1e3),'first 100 lasers'});
+title(ax(2),'last 100 lasers');
+title(ax(3),'all lasers');
+set(gcf,'Position',[0 0 150 400]);
 export_fig(sprintf('results/%slaserlock_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
 

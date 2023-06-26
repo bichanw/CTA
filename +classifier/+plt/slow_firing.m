@@ -84,7 +84,8 @@ ax = np(3,1);
 
 arrayfun(@(h) set(h,'XLim',t([1 end])), ax);
 set(gcf,'Position',[0 0 400 400]);
-title(ax(1),sprintf('%s %s',data.subject,datestr(data.session,'YYmmdd')));
+title(ax(1),{sprintf('%s %s',data.subject,datestr(data.session,'YYmmdd')),...
+			 sprintf('n = %d',size(ops.Mdl.coef,1))});
 export_fig(sprintf('results/%sslow_firing_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
 
 

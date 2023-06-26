@@ -4,20 +4,27 @@ prefix = '';
 % multinomial logistic regression settings
 ops.mnr.lambda = 1;
 ops.mnr.penalty = 'l1';
+ops.amplitude_cutoff = 0;
+ops.amplitude_cat = {'novel','water','neither'}; % categories of clusters to include: {'novel','water','neither'}
 
 
 % amplitude cutoff -- need to be at the end of script after other criterion screening!!!
+ops.amplitude_cutoff = getOr(ops,'amplitude_cutoff',20);
+if ops.amplitude_cutoff >= 0 % amplitude cutoff
 	ops.exclude_method = {'amplitude'};
-	ops.amplitude_cutoff = getOr(ops,'amplitude_cutoff',20);
-	if ops.amplitude_cutoff > 0
-		load(sprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV.mat',data.subject,ops.amplitude_cutoff))
-		ops.exclude_id = ~ismember(data.cids,[cluster_assignments.novel, cluster_assignments.water, cluster_assignments.neither])';
-		% ops.exclude_id = ~ismember(data.cids,[cluster_assignments.novel, cluster_assignments.water])';
-		% ops.exclude_id = ~ismember(data.cids,[cluster_assignments.novel, cluster_assignments.water])';
+	load(sprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV_FDR1pct.mat',data.subject,ops.amplitude_cutoff))
+	include_id = [];
+	for icat = 1:numel(ops.amplitude_cat)
+		include_id = [include_id, cluster_assignments.(ops.amplitude_cat{icat})];
 	end
-% or selecting cells that have a significant responses
-	% ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
-	% ops = classifier.select_cells.sig_resp(data,ops); % select all significant
+	ops.exclude_id = ~ismember(data.cids,include_id)';
+
+else % or select cells with significant response
+	ops = classifier.select_cells.sig_resp(data,ops); % select all significant
+end
+
+% or selecting cells that is most significant
+% ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
 
 % categorizing cells for plotting purposes
 ops.novel_vs_fam.n_sig = 15;
@@ -38,8 +45,10 @@ case 'separate' % do zscore based on separate time scale
 	ops.mnr.zscore = false;
 case 'all' % zscore based on the same mean / variance
 	ops.mnr.zscore = true; 
+case 'pre_event'
+	ops.zscore_by_time = classifier.count_spk.pre_event(data,ops);
+	ops.mnr.zscore = false;
 end
-
 
 
 
