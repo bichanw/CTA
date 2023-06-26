@@ -2,6 +2,31 @@ classdef count_spk < handle
 
 	methods (Static)
 
+		function zscore_by_time = pre_event(data,ops)
+			% count spikes for zscoring based on pre-reward or pre-cgrp activities
+			
+			% partition by time - need the variance from the entire time period
+			[~,zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+
+			% calculate baseline for 
+			% 1. drinking period - 1 sec precue
+			[~,count] = cal_raster(cellfun(@(x) x*1000,data.spikes(~ops.exclude_id),'uni',0), ...
+									[data.cues.rewarded.front; data.cues.rewarded.rear]*1000, [-1 0] *1000);
+			zscore_by_time.M(1,:) = mean(count,1);
+			% 2. 2nd context - keep the original
+			% 3. pre-cgrp stim
+			[~,count] = cal_raster(cellfun(@(x) x*1000,data.spikes(~ops.exclude_id),'uni',0), ...
+									data.laser(:,1)*1000, [-1 0] *1000);
+			zscore_by_time.M(3,:) = mean(count,1);
+
+
+			% plotting the difference in zscoring method
+				% [~,zscore_time_course] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+				% zscore_pre_stim = classifier.count_spk.pre_event(data,ops);
+				% plt_cmp_matrices({zscore_time_course.M,zscore_pre_stim.M},{'time course','pre stim'});
+
+		end
+
 		function [spk_count,ops_zscore] = zscore(spk_count,t,t_partition,MV)
 			% zscore spk_count matrix by separate time period
 			% Input: MV (optional), {M, V} 1*2 cell, use already calculated mean / variance
@@ -25,7 +50,6 @@ classdef count_spk < handle
 			% wrap partiiton with start and end time
 			t_partition = [t(1)-1 t_partition t(end)+1];
 			ops_zscore.t_partition = t_partition;
-			
 
 
 			% do z score
