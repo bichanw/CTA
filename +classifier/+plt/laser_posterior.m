@@ -1,4 +1,4 @@
-function ops = laser_posterior(data,ops,prefix)
+function [ops,resp,resp_err] = laser_posterior(data,ops,prefix)
 
 % initiation
 if nargin < 3
@@ -11,14 +11,14 @@ toi       = -1:0.025:4;
 % count spikes with larger temporal precision
 ops.tp = getOr(ops,'tp',[0 1]);
 % ops.posterior_t_edges = data.video(1):0.5:data.video(end);
-ops.posterior_t_edges = data.video(1):0.1:data.video(end);
-[spk_count,ops] = classifier.count_spk.time_course(data,ops);
+ops.posterior_t_edges = getOr(ops,'posterior_t_edges',data.video(1):0.1:data.video(end));
 
 
 % calculate posterior
 if ~isfield(ops,'Mdl')
 	[~,ops] = ops.classifier.train(data,ops);
 end
+[spk_count,ops] = classifier.count_spk.time_course(data,ops); % count spike after training classifier since the training might remove more cells
 Posterior = ops.classifier.predict(ops.Mdl,spk_count',ops);
 
 % time locked to laser onset
@@ -26,7 +26,7 @@ if isstruct(data.laser)
 	% in development
 	error('need to add onsets / offsets conversion');
 else
-	% onset and offset
+	% onset and offset (plot all 3)
 	% [resp,resp_err,tbin] = psth_time_series(Posterior,data.laser(:,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 	[resp(1,:,:),resp_err(1,:,:),tbin] = psth_time_series(Posterior,data.laser(1:100,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 	[resp(2,:,:),resp_err(2,:,:),tbin] = psth_time_series(Posterior,data.laser(end-99:end,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
@@ -34,11 +34,6 @@ else
 end
 
 Colors = getOr(data,'port_color',[1 0 0; 0 0 0]);
-% ax = np;
-% for ii=1:2
-% 	h(ii).shade = fill(ax,[tbin flip(tbin)],[squeeze(resp(:,ii))+squeeze(resp_err(:,ii)); flip(squeeze(resp(:,ii))-squeeze(resp_err(:,ii)))]',Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none');
-% 	h(ii).h_m   = plot(ax,tbin,squeeze(resp(:,ii)),'Color',Colors(ii,:),'LineWidth',1.5);
-% end
 ax = np(3,1);
 for iplot = 1:size(resp,1)
 	for ii=1:2

@@ -4,7 +4,7 @@ prefix = '';
 % multinomial logistic regression settings
 ops.mnr.lambda = 1;
 ops.mnr.penalty = 'l1';
-ops.amplitude_cutoff = 0;
+ops.amplitude_cutoff = 20;
 ops.amplitude_cat = {'novel','water','neither'}; % categories of clusters to include: {'novel','water','neither'}
 
 
@@ -18,10 +18,12 @@ if ops.amplitude_cutoff >= 0 % amplitude cutoff
 		include_id = [include_id, cluster_assignments.(ops.amplitude_cat{icat})];
 	end
 	ops.exclude_id = ~ismember(data.cids,include_id)';
+	% ops = classifier.select_cells.sig_resp(data,ops); % select all significant - did not change results by much
 
 else % or select cells with significant response
 	ops = classifier.select_cells.sig_resp(data,ops); % select all significant
 end
+
 
 % or selecting cells that is most significant
 % ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
@@ -36,7 +38,7 @@ ops.plot.slow_firing_cell = 'novel_vs_fam'; %{'novel_vs_fam','non_zero_coef'}
 
 
 % zscore
-ops.zscore_method = 'all';
+ops.zscore_method = '2nd_context';
 switch ops.zscore_method
 case 'separate' % do zscore based on separate time scale
 	% [spk_count_zscored,ops.zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
@@ -47,6 +49,12 @@ case 'all' % zscore based on the same mean / variance
 	ops.mnr.zscore = true; 
 case 'pre_event'
 	ops.zscore_by_time = classifier.count_spk.pre_event(data,ops);
+	ops.mnr.zscore = false;
+case '2nd_context'
+	% use separate period, but using 2nd context for both 2nd context and stim period
+	ops.zscore_by_time = classifier.count_spk.pre_event(data,ops);
+	ops.zscore_by_time.M(3,:) = ops.zscore_by_time.M(2,:);
+	ops.zscore_by_time.V(3,:) = ops.zscore_by_time.V(2,:);
 	ops.mnr.zscore = false;
 end
 

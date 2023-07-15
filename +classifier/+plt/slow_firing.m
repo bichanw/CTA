@@ -1,4 +1,4 @@
-function ops = slow_firing(data,ops,prefix,ax)
+function [ops,npeaks,t] = slow_firing(data,ops,prefix,ax)
 
 if nargin < 3
 	prefix = '';
@@ -34,6 +34,8 @@ switch ops.plot.slow_firing_cell
 		[~,cell_group_plt] = classifier.select_cells.novel_vs_fam(data,ops);
 	case 'non_zero_coef' % plot firing rate of the non-zero coef
 		cell_group_plt = classifier.select_cells.non_zero_coef(data,ops);
+	case 'by_coef'
+		[~,cell_group_plt] = classifier.select_cells.by_coef(data,ops);
 end
 [~,ind] = ismember(cell_group_plt.ordered_id(1:cell_group_plt.ordered_div(3)),ops.decoder_id);
 slow_change = slow_change(:,ind(ind~=0));
@@ -88,4 +90,10 @@ title(ax(1),{sprintf('%s %s',data.subject,datestr(data.session,'YYmmdd')),...
 			 sprintf('n = %d',size(ops.Mdl.coef,1))});
 export_fig(sprintf('results/%sslow_firing_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
 
+% output to save
+if nargout > 1
+	% select time points within period of interest
+	% not rebinning spike count, which is much less efficient; current margin of error small anyway
+	t_partition = common_t.last_reward(data);
+end
 

@@ -35,15 +35,15 @@ end
 
 
 % order cells for plotting raster
-switch 1
+switch 2
 case 1 % sort by ranksum
 	if ~isfield(ops,'novel_vs_fam') || ~isfield(ops.novel_vs_fam,'ordered_id')
 		ops = classifier.select_cells.novel_vs_fam(data,ops);
 	end
 case 2 % sort by coefficient
 
-	% ops = classifier.select_cells.by_coef(data,ops);
-	ops.novel_vs_fam = classifier.select_cells.non_zero_coef(data,ops);
+	ops = classifier.select_cells.by_coef(data,ops);
+	% ops.novel_vs_fam = classifier.select_cells.non_zero_coef(data,ops);
 	% % front vs back
 	% d_coef = Mdl.coef(:,1) - Mdl.coef(:,2);
 	% [~,I] = sort(d_coef,'descend');
@@ -74,10 +74,16 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		% add raster below
 		toi = [0 t_step]+t_start(ii)+(ibatch-1)*t_step*ii;
 		tmp = cellfun(@(x) x(find(x>toi(1) & x<toi(2))) , spk_2_plt,'UniformOutput',false);
-		plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',200); 
+		% plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',200,'base_color'); 
+		for jj = 1:(numel(ops.novel_vs_fam.ordered_div)-1)
+			plt.raster_smooth(tmp((ops.novel_vs_fam.ordered_div(jj)+1):(ops.novel_vs_fam.ordered_div(jj+1))),...
+							  toi,ax(ii),'dy',ops.novel_vs_fam.ordered_div(jj),'kernel_width',300,'base_color',data.port_color(jj,:,:)); 
+		end
 
 		% line for posterior probability
-		h = plot(ax(ii),ops.posterior_t,Posterior.*-5); h(2-data.port_is_water(2)).Color = [1 0 0]; h(2-data.port_is_water(1)).Color = [0 0 0]; 
+		h = plot(ax(ii),ops.posterior_t,Posterior.*-5); 
+		arrayfun(@(ii) set(h(ii),'Color',data.port_color(ii,:)), 1:2);
+		% h(2-data.port_is_water(2)).Color = [1 0 0]; h(2-data.port_is_water(1)).Color = [0 0 0]; 
 		if numel(h)>2 
 			h(3).Color(4) = 0.5;h(3).LineWidth = 0.7;
 		end
@@ -106,10 +112,10 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 				            'YTick',ytick_loc,'YTickLabel',['posterior',ops.novel_vs_fam.cell_cat_name]), 1:numel(ax))
 
 	% save figure
-	export_fig(sprintf('results/%sposterior_raster_%s_%s_%d.pdf',prefix,data.subject,datestr(data.session,'yymmdd'),ibatch));
+	export_fig(sprintf('results/%sposterior_raster_coef_%s_%s_%d.pdf',prefix,data.subject,datestr(data.session,'yymmdd'),ibatch));
 
 end
-append_script(sprintf('results/%sposterior_raster_%s_%s',prefix,data.subject,datestr(data.session,'yymmdd')));
+append_script(sprintf('results/%sposterior_raster_coef_%s_%s',prefix,data.subject,datestr(data.session,'yymmdd')));
 
 
 
