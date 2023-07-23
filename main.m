@@ -7,8 +7,8 @@ clear all; clc; close all; addpath('helpfun');
 
 
 sessions; % initialize sessions to run
-for iSession = 1:numel(Sessions.subject)
-% for iSession = [1, 4, 5, 7]
+% for iSession = 1:numel(Sessions.subject)
+for iSession = 2
 
 
 	% load data
@@ -59,11 +59,10 @@ for iSession = 1:numel(Sessions.subject)
 	for lambda = 1
 		ops.mnr.lambda = lambda;
 		prefix = sprintf('amp%d_%dcat_%s_%s_%.1e_',ops.amplitude_cutoff,numel(ops.amplitude_cat),ops.zscore_method,ops.mnr.penalty,ops.mnr.lambda);
-		% prefix = sprintf('%s_%s_%.1e_',roi{1},ops.mnr.penalty,ops.mnr.lambda);
 		% ops = classifier.plt.slow_firing(data,ops,prefix);
 		% return
-		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
-		ops = classifier.plt.laser_posterior(data,ops,prefix);
+		classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+		% [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:)] = classifier.plt.laser_posterior(data,ops,prefix);
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
 	end
@@ -73,10 +72,11 @@ end
 
 % save processing setting
 saveops(ops);
+% return
 
-append_script(['results/' prefix],true);
+% append_script(['results/' prefix],true);
 % append_script(['results/novel_vs_fam_' prefix],true);
-fprintf('Finish running %s\n',prefix);
+% fprintf('Finish running %s\n',prefix);
 return
 
 

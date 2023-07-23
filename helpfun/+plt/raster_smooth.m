@@ -3,6 +3,8 @@ function rate_smooth(spikes,toi,ax,varargin)
 % parse input
 p = inputParser;
 addParameter(p,'kernel_width',25);
+addParameter(p,'dy',0); % offset on y axis
+addParameter(p,'base_color',[0 0 0]); % color of maximum firing
 parse(p,varargin{:});
 
 
@@ -28,13 +30,15 @@ end
 
 % bin for easier plotting
 [R,~,~,tbin] = running_average(t_mat,spk_mat,10,10);
+R = (R ./ max(R,[],1))';
+R(isnan(R)) = 0;
+n_color = 255;
 
 
 % plot
-% ax = np;
-imagesc(ax,tbin / 1000,1:n_cells,(R ./ max(R,[],1))');
 % imagesc(ax,tbin / 1000,1:n_cells,R');
 % imagesc(ax,tbin / 1000,1:n_cells,zscore(R,0,1)');
+image(ax,tbin / 1000,(1:n_cells) + p.Results.dy,ind2rgb(round(R*n_color),1 - linspace(0,1,n_color)' * (1-p.Results.base_color)));
 set(ax,'YDir','reverse','XLim',toi,'YLim',[0 n_cells]);
 colorbar;
 colormap(cbrewer2('Greys'));

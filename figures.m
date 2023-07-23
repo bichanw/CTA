@@ -1,6 +1,32 @@
+%% paper figure
+% general figure setting
+Colors = [0.9412    0.2118    0.2745;   0.0667    0.5020    0.9451; 0 1 0]; % novel, familiar, CGRP
+
+% averaged laser posterior
+	load('figures/laser_posterior.mat');
+	% resp - 6 sessions * 3 time periods * 201 time points * 3 conditions
+	% tbin - time stamps for 201 time points
+	% ax = np;
+	% plot(tbin,squeeze(mean(resp(:,1,:,1),1)));ef;
+
+	ax = np(3,1);
+	for iplot = 1:3
+		plot_multiple_lines(squeeze(resp(:,iplot,:,1)),ax(iplot),'x',tbin,'base_color',Colors(1,:));
+		plot_multiple_lines(squeeze(resp(:,iplot,:,2)),ax(iplot),'x',tbin,'base_color',Colors(2,:));
+	end
+	align_ax(ax,true,true);
+
+	% temporary figure setting (might want to select 1 plot in the future)
+	xlabel(ax(3),'Time (s)');
+	ylabel(ax(2),'Posterior probability');
+
+% raster
+	
+% averaged peak number
 
 
-%% Code to produce required figures
+return
+%% K99 figures
 
 % chris k99, figure 2c raster
 	data = load_data.all(datetime(2022,12,4),'002');

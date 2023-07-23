@@ -74,7 +74,7 @@ classdef select_cells < handle
 
 		end
 
-		function ops = by_coef(data,ops)
+		function [ops,cell_order] = by_coef(data,ops)
 			% sort cells by classifier coeffieicent
 
 			% run classifier
@@ -87,20 +87,31 @@ classdef select_cells < handle
 			[~,I] = sort(d_coef,'descend');
 			ind   = find(~ops.exclude_id);
 
+			% pick out cells that preferred novel or familiar based on classifier
+			sig_n = 10;
+			cell_oi = {ind(I(1:sig_n)),ind(I(end-(sig_n-1):end))};
+			cell_oi{1} = cell_oi{1}(ops.Mdl.coef(I(1:sig_n),1)>0);
+			cell_oi{2} = cell_oi{2}(ops.Mdl.coef(I(end-(sig_n-1):end),2)>0);
+
 			% sort by peak
 			[~,ops,events_oi] = classifier.count_spk.events(data,ops);
 			ind_sort_by_peak = [];
-			cell_oi = {ind(I(1:15)),ind(I(end-14:end))};
 			for ii = 1:2
 				tmp = cell_oi{ii};
 				tmp = tmp(classifier.select_cells.rank_by_peak(data.spikes(tmp),events_oi{ii},ops));
 				ind_sort_by_peak = [ind_sort_by_peak, tmp];
 			end
+			% add group of random cells
+			
 
 			% replace results
 			ops.novel_vs_fam.ordered_id    = ind_sort_by_peak;
-			ops.novel_vs_fam.ordered_div   = [0 15 30];
+			ops.novel_vs_fam.ordered_div   = [0 numel(cell_oi{1}) numel(cell_oi{1})+numel(cell_oi{2})];
 			ops.novel_vs_fam.cell_cat_name = {'front higher','back higher'};
+			if nargout > 1
+				cell_order = ops.novel_vs_fam;
+			end
+
 		end
 
 		function [ops,cell_order] = novel_vs_fam(data,ops)
