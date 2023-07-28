@@ -89,7 +89,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 	set(ax(2),'XLim',tbin([1 end]),'XTick',[0 1 2 3],'XTickLabel',{'onset','1','2','offset'});
 	xlabel(ax(2),'Time (s)');
 
-	ax(1).Position = [0.1485    0.6620    0.7565    0.2630];
+	ax(1).Position = [0.1485    0.5    0.7565    0.2630];
 	ax(2).Position = [0.1485    0.1882    0.7565    0.2630];
 	set(gcf,'Position',[0 0 150 250]);
 

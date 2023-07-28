@@ -7,8 +7,8 @@ clear all; clc; close all; addpath('helpfun');
 
 
 sessions; % initialize sessions to run
-for iSession = 1:numel(Sessions.subject)
-% for iSession = 2
+% for iSession = 1:numel(Sessions.subject)
+for iSession = 3
 
 
 	% load data
@@ -58,12 +58,13 @@ for iSession = 1:numel(Sessions.subject)
 	% % for lambda = [1e-4 1e-2 1]
 	for lambda = 1
 		ops.mnr.lambda = lambda;
-		prefix = sprintf('amp%d_%dcat_%s_%s_%.1e_',ops.amplitude_cutoff,numel(ops.amplitude_cat),ops.zscore_method,ops.mnr.penalty,ops.mnr.lambda);
-		
-		[ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
+		% prefix = sprintf('amp%d_%dcat_%s_%s_%.1e_',ops.amplitude_cutoff,numel(ops.amplitude_cat),ops.zscore_method,ops.mnr.penalty,ops.mnr.lambda);
+		prefix = 'testremove_';
+
+		% [ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
 		% return
+		[ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:)] = classifier.plt.laser_posterior(data,ops,prefix);
 		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
-		% [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:)] = classifier.plt.laser_posterior(data,ops,prefix);
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
 	end
@@ -105,26 +106,3 @@ ax = np; imagesc(squeeze(tmp(1,:,:)));colorbar;ef;
 	arrayfun(@(ii) fprintf('Cell %d available spikes: %d, %d\n',ii,n_spk(ii,1),n_spk(ii,2)), 1:numel(data.spikes));
 
 
-
-% gamma distribution
-	m = 50; v = 10;
-	b = m / v;
-	a = m * b;
-	x = 30:70;
-	y = gampdf(x,a,1/b);
-	ax = np; plot(x,y);ef;
-
-% scaled inverse-chi-square simulation
-	v = 6;
-	t2 = 0.15;
-	x = 0:0.01:1;
-	f = (t2*v/2)^(v/2)/gamma(v/2) * x.^(-v/2-1) .* exp(-t2*v./(2*x));
-	ax = np; plot(x,f);ef;
-
-
-% 2d dirichlet simulation
-	x = 0:0.01:1;
-	conc_param = 10.0;
-	y = (x - x.^2).^(conc_param-1);
-	y = y ./ sum(y);
-	ax = np; plot(x,y);export_fig tmp.png -r300;

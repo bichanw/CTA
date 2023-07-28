@@ -135,3 +135,28 @@ return
 	save('mat/julia.mat','clu','t','cell_oi','filename','toi');
 
 
+
+% distribution parameter check
+
+% gamma distribution
+	m = 50; v = 10;
+	b = m / v;
+	a = m * b;
+	x = 30:70;
+	y = gampdf(x,a,1/b);
+	ax = np; plot(x,y);ef;
+
+% scaled inverse-chi-square simulation
+	v = 6;
+	t2 = 0.15;
+	x = 0:0.01:1;
+	f = (t2*v/2)^(v/2)/gamma(v/2) * x.^(-v/2-1) .* exp(-t2*v./(2*x));
+	ax = np; plot(x,f);ef;
+
+
+% 2d dirichlet simulation
+	x = 0:0.01:1;
+	conc_param = 10.0;
+	y = (x - x.^2).^(conc_param-1);
+	y = y ./ sum(y);
+	ax = np; plot(x,y);export_fig tmp.png -r300;

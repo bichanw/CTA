@@ -169,9 +169,9 @@ classdef count_spk < handle
 			else
 				% use histcount for efficiency
 				spk_count = NaN(numel(data.spikes),numel(posterior_t_edges));
-				if bin_width == (ops.posterior_t_edges(2)-ops.posterior_t_edges(1))
+				if bin_width == (posterior_t_edges(2)-posterior_t_edges(1))
 					for ii = 1:numel(data.spikes)
-						[spk_count(ii,:),edges] = histcounts(X);
+						[spk_count(ii,:),edges] = histcounts(data.spikes{ii},[posterior_t_edges posterior_t_edges(end)+posterior_t_edges(2)-posterior_t_edges(1)]);
 					end
 					t = ops.posterior_t_edges(1:end-1) + bin_width / 2;
 				else

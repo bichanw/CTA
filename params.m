@@ -24,6 +24,11 @@ else % or select cells with significant response
 	ops = classifier.select_cells.sig_resp(data,ops); % select all significant
 end
 
+% 
+if strcmpi(data.subject,'302')
+	ops.exclude_id(100) = true;
+end
+
 
 % or selecting cells that is most significant
 % ops.exclude_id = ~ismember(1:numel(data.spikes),ops.novel_vs_fam.ordered_id(1:ops.novel_vs_fam.ordered_div(end-2)));
