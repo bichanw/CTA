@@ -50,7 +50,7 @@ function h = scatter_event(data,ax,y)
 		else
 			% h(1,4) = my_scatter(data.laser(:,1),y,ax,'.','MarkerEdgeColor',[0 0 1]);
 			% plot from onset to offset
-			plot(ax,data.laser',repmat(y,size(data.laser')),'Color',[0 1 0]);
+			plot(ax,data.laser',repmat(y,size(data.laser')),'Color',[54 161 86]/255);
 		end
 	end
 

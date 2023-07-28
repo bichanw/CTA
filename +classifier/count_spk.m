@@ -2,6 +2,41 @@ classdef count_spk < handle
 
 	methods (Static)
 
+		function [spk_raster,t] = tiny_bin_raster(spikes,edges)
+			% count spikes with tiny bins for raster plot
+			% Input: spikes - cell array of spike times
+			
+
+			% put convolution here as well, set parameters as fixed for now since we're copying chris's settings
+			% prepare kernel first
+			v = CausalGauss(2.5); % 25 ms for 10 ms bin
+			
+			% bin spikes with tiny bins for raster
+			spk_raster = NaN(numel(spikes),numel(edges)-1);
+			for ii = 1:numel(spikes)
+				spk_raster(ii,:) = histcounts(spikes{ii},edges); % count spikes
+				spk_raster(ii,:) = zscore(spk_raster(ii,:)); % zscore
+				spk_raster(ii,:) = conv(spk_raster(ii,:),v,'same'); % convolve
+			end
+			t = edges(1:end-1) + (edges(2)-edges(1)) / 2;
+			
+
+			
+			% part of the code that used to go into classifier.plt.posterior_raster
+			% [spk_raster,t_raster] = classifier.count_spk.tiny_bin_raster(spk_2_plt,data.video(1):0.01:data.video(end));
+			% raster_cmap = flip(cbrewer2('RdBu'));
+			
+			% % new method, bin 10 ms, convolve with 25 ms half-gaussian - keep constant with Chris method
+			% % discarded
+			% tmp = (t_raster>toi(1) & t_raster<toi(2));
+			% imagesc(ax(ii),t_raster(tmp),1:size(spk_raster,1),spk_raster(:,tmp));
+			% colormap(raster_cmap);
+			% ax(ii).CLim = [-0.5 0.5];
+			% ax(ii).YDir = 'reverse';
+
+		end
+
+
 		function zscore_by_time = pre_event(data,ops)
 			% count spikes for zscoring based on pre-reward or pre-cgrp activities
 			
@@ -45,7 +80,6 @@ classdef count_spk < handle
 			else
 				ops_zscore.M = nan(numel(t_partition)+1,size(spk_count,1));
 				ops_zscore.V = ops_zscore.M;
-
 			end
 			% wrap partiiton with start and end time
 			t_partition = [t(1)-1 t_partition t(end)+1];
@@ -119,23 +153,31 @@ classdef count_spk < handle
 			f_spk = sprintf('mat/bin_%.1f_step_%.1f_%s_%s.mat',diff(ops.tp),diff(posterior_t_edges(1:2)),data.subject,datestr(data.session,'YYmmdd'));
 
 			% load file
-			if exist(f_spk) || (nargin>2 && ~recalculate)
+			if exist(f_spk) && ((nargin < 3) || ~recalculate)
 				load(f_spk);
 
 				% recalculate if not including all neurons
-				if size(spk_count,1)<numel(data.spikes)
-					spk_count = NaN(numel(data.spikes),numel(posterior_t_edges)); t = [];
-					for ii = 1:numel(data.spikes)
-						[~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
-					end
-					save(f_spk,'spk_count','t','bin_width');
-				end
+				% if size(spk_count,1)<numel(data.spikes)
+				% 	spk_count = NaN(numel(data.spikes),numel(posterior_t_edges)); t = [];
+				% 	for ii = 1:numel(data.spikes)
+				% 		[~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
+				% 	end
+				% 	save(f_spk,'spk_count','t','bin_width');
+				% end
 
 			% count spikes again
 			else
-				spk_count = NaN(numel(data.spikes),numel(posterior_t_edges)); t = [];
-				for ii = 1:numel(data.spikes)
-					[~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
+				% use histcount for efficiency
+				spk_count = NaN(numel(data.spikes),numel(posterior_t_edges));
+				if bin_width == (ops.posterior_t_edges(2)-ops.posterior_t_edges(1))
+					for ii = 1:numel(data.spikes)
+						[spk_count(ii,:),edges] = histcounts(X);
+					end
+					t = ops.posterior_t_edges(1:end-1) + bin_width / 2;
+				else
+					for ii = 1:numel(data.spikes)
+						[~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
+					end
 				end
 				save(f_spk,'spk_count','t','bin_width');
 			end

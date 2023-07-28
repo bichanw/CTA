@@ -88,10 +88,10 @@ classdef select_cells < handle
 			ind   = find(~ops.exclude_id);
 
 			% pick out cells that preferred novel or familiar based on classifier
-			sig_n = 10;
-			cell_oi = {ind(I(1:sig_n)),ind(I(end-(sig_n-1):end))};
-			cell_oi{1} = cell_oi{1}(ops.Mdl.coef(I(1:sig_n),1)>0);
-			cell_oi{2} = cell_oi{2}(ops.Mdl.coef(I(end-(sig_n-1):end),2)>0);
+			n_sig = 10;
+			cell_oi = {ind(I(1:n_sig)),ind(I(end-(n_sig-1):end))};
+			cell_oi{1} = cell_oi{1}(ops.Mdl.coef(I(1:n_sig),1)>0);
+			cell_oi{2} = cell_oi{2}(ops.Mdl.coef(I(end-(n_sig-1):end),2)>0);
 
 			% sort by peak
 			[~,ops,events_oi] = classifier.count_spk.events(data,ops);
@@ -102,12 +102,15 @@ classdef select_cells < handle
 				ind_sort_by_peak = [ind_sort_by_peak, tmp];
 			end
 			% add group of random cells
+			[~,I] = sort(abs(d_coef),'ascend');
+			ind_sort_by_peak = [ind_sort_by_peak, ind(I(1:n_sig))];
 			
 
 			% replace results
+			ops.novel_vs_fam.n_sig         = n_sig;
 			ops.novel_vs_fam.ordered_id    = ind_sort_by_peak;
-			ops.novel_vs_fam.ordered_div   = [0 numel(cell_oi{1}) numel(cell_oi{1})+numel(cell_oi{2})];
-			ops.novel_vs_fam.cell_cat_name = {'front higher','back higher'};
+			ops.novel_vs_fam.ordered_div   = [0 cumsum([numel(cell_oi{1}) numel(cell_oi{2}) n_sig])];
+			ops.novel_vs_fam.cell_cat_name = {'front higher','back higher','control'};
 			if nargout > 1
 				cell_order = ops.novel_vs_fam;
 			end
@@ -127,7 +130,7 @@ classdef select_cells < handle
 
 				% check if already excluded
 				if ops.exclude_id(ii)
-					cell_cat(ii) = 0;
+					cell_cat(ii) = -1;
 					continue;
 				end
 
@@ -148,7 +151,7 @@ classdef select_cells < handle
 						cell_cat(ii) = 3; % different than control
 						zval(ii)     = stats.zval;
 					else
-						cell_cat(ii) = 0; % no response
+						cell_cat(ii) = 3; % no response
 					end
 
 				end
@@ -182,17 +185,18 @@ classdef select_cells < handle
 			end
 
 			% add non significant cells
-			ind = find(cell_cat==0);
-			n = min([numel(ind) n_sig]);
-			ordered_id = [ordered_id; ind(randperm(numel(ind),n))];
-			ordered_div = [ordered_div ordered_div(end)+n];
+			% removed, since we want to combine non-responsive cells with non-different cells
+			% ind = find(cell_cat==0);
+			% n = min([numel(ind) n_sig]);
+			% ordered_id = [ordered_id; ind(randperm(numel(ind),n))];
+			% ordered_div = [ordered_div ordered_div(end)+n];
 
 			% save information
 			ops.novel_vs_fam.ordered_id = ordered_id;
 			ops.novel_vs_fam.ordered_div = ordered_div;
 			ops.novel_vs_fam.n_sig = n_sig;
 			ops.novel_vs_fam.cell_cat = cell_cat;
-			ops.novel_vs_fam.cell_cat_name = {'front higher','back higher','different from control','non significant'};
+			ops.novel_vs_fam.cell_cat_name = {'front higher','back higher','control'};
 			
 			if nargout > 1
 				cell_order = ops.novel_vs_fam;

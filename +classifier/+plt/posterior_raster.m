@@ -21,6 +21,7 @@ case 1 % calculate posterior
 	end
 
 	% count spikes time course
+	ops.posterior_t_edges = data.video(1):0.5:data.video(end);
 	[count,ops] = classifier.count_spk.time_course(data,ops);
 
 	% calculate posterior
@@ -35,36 +36,25 @@ end
 
 
 % order cells for plotting raster
-switch 2
+switch 1
 case 1 % sort by ranksum
 	if ~isfield(ops,'novel_vs_fam') || ~isfield(ops.novel_vs_fam,'ordered_id')
 		ops = classifier.select_cells.novel_vs_fam(data,ops);
 	end
+	prefix = [prefix 'ranksum_'];
 case 2 % sort by coefficient
-
 	ops = classifier.select_cells.by_coef(data,ops);
-	% ops.novel_vs_fam = classifier.select_cells.non_zero_coef(data,ops);
-	% % front vs back
-	% d_coef = Mdl.coef(:,1) - Mdl.coef(:,2);
-	% [~,I] = sort(d_coef,'descend');
-	% ind   = find(~ops.exclude_id);
-
-	% % % reward vs control
-	% % d_coef = Mdl.coef(:,1) + Mdl.coef(:,2) - Mdl.coef(:,3)*2;
-	% % [~,I] = sort(abs(d_coef),'descend');
-
-	% % replace results
-	% ops.novel_vs_fam.ordered_id    = [ind(I(1:15)) ind(I(end-14:end))];
-	% ops.novel_vs_fam.ordered_div   = [0 15 30];
-	% ops.novel_vs_fam.cell_cat_name = {'front higher','back higher'};
+	prefix = [prefix 'coef_'];
 end
 spk_2_plt = data.spikes(ops.novel_vs_fam.ordered_id);
 ytick_loc = [-2.5 (ops.novel_vs_fam.ordered_div(1:end-1)+ops.novel_vs_fam.ordered_div(2:end))/2];
 
 
+
 % plot initiation
 t_step  = 100;
 t_start = min(ops.posterior_t):t_step:max(ops.posterior_t);
+h_posterior = 5; % height of posterior traces
 max_ax = 1;
 for ibatch = 1:ceil(numel(t_start)/max_ax)
 	ax = np(max_ax,1);
@@ -73,15 +63,25 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		
 		% add raster below
 		toi = [0 t_step]+t_start(ii)+(ibatch-1)*t_step*ii;
+		% convolve raw spikes and average
 		tmp = cellfun(@(x) x(find(x>toi(1) & x<toi(2))) , spk_2_plt,'UniformOutput',false);
-		% plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',200,'base_color'); 
-		for jj = 1:(numel(ops.novel_vs_fam.ordered_div)-1)
-			plt.raster_smooth(tmp((ops.novel_vs_fam.ordered_div(jj)+1):(ops.novel_vs_fam.ordered_div(jj+1))),...
-							  toi,ax(ii),'dy',ops.novel_vs_fam.ordered_div(jj),'kernel_width',300,'base_color',data.port_color(jj,:,:)); 
+		switch 'smooth_colored'
+		case 'smooth_bw'
+			% same color
+			plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',300); 
+		case 'smooth_colored'
+			ops.novel_vs_fam.ordered_color = [data.port_color; 0 0 0];
+			% color raster by cell category
+			for jj = 1:(numel(ops.novel_vs_fam.ordered_div)-1)
+				plt.raster_smooth(tmp((ops.novel_vs_fam.ordered_div(jj)+1):(ops.novel_vs_fam.ordered_div(jj+1))),...
+								toi,ax(ii),'dy',ops.novel_vs_fam.ordered_div(jj),'kernel_width',300,'base_color',ops.novel_vs_fam.ordered_color(jj,:,:)); 
+			end
 		end
 
+		
+
 		% line for posterior probability
-		h = plot(ax(ii),ops.posterior_t,Posterior.*-5); 
+		h = plot(ax(ii),ops.posterior_t,Posterior .* -h_posterior); 
 		arrayfun(@(ii) set(h(ii),'Color',data.port_color(ii,:)), 1:2);
 		% h(2-data.port_is_water(2)).Color = [1 0 0]; h(2-data.port_is_water(1)).Color = [0 0 0]; 
 		if numel(h)>2 
@@ -100,7 +100,7 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		end
 
 		% events
-		h = classifier.plt.scatter_event(data,ax(ii),-5.5);
+		h = classifier.plt.scatter_event(data,ax(ii),-h_posterior * 1.1);
 		legend([h(:,1)' h(1,2) h(1,3)],{'front reward','back','front cue','front entry'},'Location','northeastoutside');
 	end
 
@@ -108,7 +108,7 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 	% change x axis to progress in time
 	set(gcf,'Position',[0 0 800 250*max_ax]);
 	arrayfun(@(i) set(ax(i),'XLim',[0 t_step]+t_start(i)+(ibatch-1)*t_step*max_ax,...
-							'YLim',[-6 numel(spk_2_plt)+0.5],...
+							'YLim',[-h_posterior-1 numel(spk_2_plt)+0.5],...
 				            'YTick',ytick_loc,'YTickLabel',['posterior',ops.novel_vs_fam.cell_cat_name]), 1:numel(ax))
 
 	% save figure

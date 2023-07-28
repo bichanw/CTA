@@ -1,4 +1,4 @@
-function [ops,npeaks,t] = slow_firing(data,ops,prefix,ax)
+function [ops,to_save] = slow_firing(data,ops,prefix,ax)
 
 if nargin < 3
 	prefix = '';
@@ -47,8 +47,7 @@ prefix = [ops.plot.slow_firing_cell '_' prefix];
 [~,locs] = arrayfun(@(ii) findpeaks(Posterior(:,ii),'MinPeakHeight',0.5), 1:2, 'UniformOutput',false);
 [~,npeaks] = running_average(ops.posterior_t(locs{1}),[],bin_width,[],slow_edges);
 [~,npeaks(:,end+1)] = running_average(ops.posterior_t(locs{2}),[],bin_width,[],slow_edges);
-% average posterior
-[avg_post] = running_average(ops.posterior_t,Posterior,bin_width,[],slow_edges);
+
 
 
 % sanity check
@@ -63,37 +62,73 @@ if isfield(data,'port_is_water') && sum(data.port_is_water)
 	cell_group_plt.cell_cat_name(1:2) = tmp(data.port_is_water+1);
 end
 
-ax = np(3,1); 
-% slow firing
-	clear h;
-	Colors = getOr(data,'port_color',[1 0 0;0 0 0]);
-	h    = plot_multiple_lines(slow_change(:,1:cell_group_plt.ordered_div(2))',ax(1),'x',t,'base_color',Colors(1,:));
-	h(2) = plot_multiple_lines(slow_change(:,(cell_group_plt.ordered_div(2)+1):cell_group_plt.ordered_div(3))',ax(1),'x',t,'base_color',Colors(2,:));
-	classifier.plt.divider_event(data,ax(1));
-	legend(ax(1),[h(1).h_m h(2).h_m],cell_group_plt.cell_cat_name,'box','off');
-	ylabel(ax(1),'z-scored firing');
-	
-% posterior peaks
-	plot(ax(2),t,npeaks(:,1),'Color',Colors(1,:));
-	plot(ax(2),t,npeaks(:,2),'Color',Colors(2,:));
-	xlabel(ax(2),'time (s)'); 
-	ylabel(ax(2),'# peak');
-% slow posterior
-	plot(ax(3),t,avg_post(:,1),'Color',Colors(1,:));
-	plot(ax(3),t,avg_post(:,2),'Color',Colors(2,:));
-	xlabel(ax(3),'time (s)'); 
-	ylabel(ax(3),'avg post');
-
-arrayfun(@(h) set(h,'XLim',t([1 end])), ax);
-set(gcf,'Position',[0 0 400 400]);
-title(ax(1),{sprintf('%s %s',data.subject,datestr(data.session,'YYmmdd')),...
-			 sprintf('n = %d',size(ops.Mdl.coef,1))});
-export_fig(sprintf('results/%sslow_firing_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
 
 % output to save
 if nargout > 1
 	% select time points within period of interest
 	% not rebinning spike count, which is much less efficient; current margin of error small anyway
-	t_partition = common_t.last_reward(data);
+	t_2_plot = [10 30 45]; % how many data points to take
+	t_partition = [common_t.last_reward(data) common_t.first_laser(data)];
+	bin_width = 60; step_size = 30;
+
+	% better just to recount the peaks, right now npeaks is smaller
+	for ii = 1:2
+		to_save.npeaks(ii,:) = {hist_overlap(ops.posterior_t(locs{ii}),bin_width,[(t_partition(1)-t_2_plot(1)*60):step_size:(t_partition(1)-bin_width)]),...
+					  		hist_overlap(ops.posterior_t(locs{ii}),bin_width,[(t_partition(1)):step_size:(t_partition(1)+t_2_plot(2)*60-bin_width)]),...
+					  		hist_overlap(ops.posterior_t(locs{ii}),bin_width,[(t_partition(2)):step_size:(t_partition(2)+t_2_plot(3)*60-bin_width)])};
+	end
+
+	% switch novel to first 
+	if data.port_is_water(1)
+		to_save.npeaks = to_save.npeaks([2 1],:);
+	end
+
+	% save parameters
+	to_save.t_2_plot = t_2_plot;	
+	to_save.bin_width = bin_width;
+	to_save.step_size = step_size;
+
+	% plot for examination
+	% [ax,r,c] = np(2,3);
+	% for ii = 1:2
+	% 	for jj = 1:3
+	% 		plot(ax(sub2ind([c r],jj,ii)),to_save.npeaks{ii,jj});
+	% 	end
+	% end
+	% ef;
+
+else
+
+	% average posterior (don't need this for final figure so putting it here)
+	[avg_post] = running_average(ops.posterior_t,Posterior,bin_width,[],slow_edges);
+
+	% do no save, just plot
+	ax = np(3,1); 
+	% slow firing
+		clear h;
+		Colors = getOr(data,'port_color',[1 0 0;0 0 0]);
+		h    = plot_multiple_lines(slow_change(:,1:cell_group_plt.ordered_div(2))',ax(1),'x',t,'base_color',Colors(1,:));
+		h(2) = plot_multiple_lines(slow_change(:,(cell_group_plt.ordered_div(2)+1):cell_group_plt.ordered_div(3))',ax(1),'x',t,'base_color',Colors(2,:));
+		classifier.plt.divider_event(data,ax(1));
+		legend(ax(1),[h(1).h_m h(2).h_m],cell_group_plt.cell_cat_name,'box','off');
+		ylabel(ax(1),'z-scored firing');
+		
+	% posterior peaks
+		plot(ax(2),t,npeaks(:,1),'Color',Colors(1,:));
+		plot(ax(2),t,npeaks(:,2),'Color',Colors(2,:));
+		xlabel(ax(2),'time (s)'); 
+		ylabel(ax(2),'# peak');
+	% slow posterior
+		plot(ax(3),t,avg_post(:,1),'Color',Colors(1,:));
+		plot(ax(3),t,avg_post(:,2),'Color',Colors(2,:));
+		xlabel(ax(3),'time (s)'); 
+		ylabel(ax(3),'avg post');
+
+	arrayfun(@(h) set(h,'XLim',t([1 end])), ax);
+	set(gcf,'Position',[0 0 400 400]);
+	title(ax(1),{sprintf('%s %s',data.subject,datestr(data.session,'YYmmdd')),...
+				sprintf('n = %d',size(ops.Mdl.coef,1))});
+	export_fig(sprintf('results/%sslow_firing_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
+	
 end
 

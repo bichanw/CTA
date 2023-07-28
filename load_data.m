@@ -77,7 +77,7 @@ classdef load_data < handle
 						data.port_is_water = [false true];
 					end
 				end
-				tmp = [1 0 0; 0.5  0.5 1];
+				tmp = [228 45 38; 55 135 192] / 255;
 				data.port_color = tmp(data.port_is_water+1,:);
 
 			% LiCl injection time
