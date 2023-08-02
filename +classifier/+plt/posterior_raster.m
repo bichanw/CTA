@@ -36,7 +36,7 @@ end
 
 
 % order cells for plotting raster
-switch 1
+switch 3
 case 1 % sort by ranksum
 	if ~isfield(ops,'novel_vs_fam') || ~isfield(ops.novel_vs_fam,'ordered_id')
 		ops = classifier.select_cells.novel_vs_fam(data,ops);
@@ -45,6 +45,9 @@ case 1 % sort by ranksum
 case 2 % sort by coefficient
 	ops = classifier.select_cells.by_coef(data,ops);
 	prefix = [prefix 'coef_'];
+case 3
+	ops.novel_vs_fam = classifier.select_cells.by_rastermap(data,ops);
+	prefix = [prefix 'rastermap_'];
 end
 spk_2_plt = data.spikes(ops.novel_vs_fam.ordered_id);
 ytick_loc = [-2.5 (ops.novel_vs_fam.ordered_div(1:end-1)+ops.novel_vs_fam.ordered_div(2:end))/2];
@@ -54,7 +57,7 @@ ytick_loc = [-2.5 (ops.novel_vs_fam.ordered_div(1:end-1)+ops.novel_vs_fam.ordere
 % plot initiation
 t_step  = 100;
 t_start = min(ops.posterior_t):t_step:max(ops.posterior_t);
-h_posterior = 5; % height of posterior traces
+h_posterior = numel(spk_2_plt)/6; % height of posterior traces
 max_ax = 1;
 for ibatch = 1:ceil(numel(t_start)/max_ax)
 	ax = np(max_ax,1);
@@ -65,7 +68,7 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		toi = [0 t_step]+t_start(ii)+(ibatch-1)*t_step*ii;
 		% convolve raw spikes and average
 		tmp = cellfun(@(x) x(find(x>toi(1) & x<toi(2))) , spk_2_plt,'UniformOutput',false);
-		switch 'smooth_colored'
+		switch 'smooth_bw'
 		case 'smooth_bw'
 			% same color
 			plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',300); 
@@ -90,8 +93,9 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 
 
 		% add division for different cells
-		plot(ax(ii),toi',repmat(ops.novel_vs_fam.ordered_div(2:end-1)+0.5,2,1),'-','LineWidth',0.7,'Color',[0.3 0.3 0.3]);
-
+		if numel(ops.novel_vs_fam.ordered_div) > 2
+			plot(ax(ii),toi',repmat(ops.novel_vs_fam.ordered_div(2:end-1)+0.5,2,1),'-','LineWidth',0.7,'Color',[0.3 0.3 0.3]);
+		end
 
 		% licl if applied
 		if isfield(data,'licl') && (data.licl>=toi(1)&&data.licl<=toi(2))

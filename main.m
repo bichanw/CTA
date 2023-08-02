@@ -7,8 +7,8 @@ clear all; clc; close all; addpath('helpfun');
 
 
 sessions; % initialize sessions to run
-% for iSession = 1:numel(Sessions.subject)
-for iSession = 3
+for iSession = 1:numel(Sessions.subject)
+% for iSession = 3
 
 
 	% load data
@@ -58,15 +58,15 @@ for iSession = 3
 	% % for lambda = [1e-4 1e-2 1]
 	for lambda = 1
 		ops.mnr.lambda = lambda;
-		% prefix = sprintf('amp%d_%dcat_%s_%s_%.1e_',ops.amplitude_cutoff,numel(ops.amplitude_cat),ops.zscore_method,ops.mnr.penalty,ops.mnr.lambda);
-		prefix = 'testremove_';
+		prefix = sprintf('amp%d_%dcat_%s_%s_%.1e_',ops.amplitude_cutoff,numel(ops.amplitude_cat),ops.zscore_method,ops.mnr.penalty,ops.mnr.lambda);
+		% prefix = 'testremove_';
 
 		% [ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
-		% return
-		[ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:)] = classifier.plt.laser_posterior(data,ops,prefix);
-		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
+		% ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin] = classifier.plt.laser_posterior(data,ops,prefix);
+		classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
+		return
 	end
 	% classifier.plt.cv(data,ops,prefix);
 	% return
@@ -78,13 +78,17 @@ saveops(ops);
 
 if exist('to_save')
 	save(sprintf('mat/decoders_peaks_bin%d_step%d.mat',to_save(1).bin_width,to_save(1).step_size),'to_save');
-	% save figures/decoders_peaks to_save
+end
+if exist('resp')
+	save('figures/0.15.mat','resp','resp_err','tbin');
 end
 
 % append_script(['results/' prefix],true);
 % append_script(['results/novel_vs_fam_' prefix],true);
 % fprintf('Finish running %s\n',prefix);
 return
+
+
 
 
 % examine 

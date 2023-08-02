@@ -40,6 +40,27 @@ classdef select_cells < handle
 
 		end
 
+		function cell_order = by_rastermap(data,ops)
+			% sort cells unsupervised by rastermap
+
+			% save spike count during drinking period for rastermap
+			t = (common_t.first_reward(data)-5):0.1:(common_t.last_reward(data)+5);
+			spks = nan(sum(~ops.exclude_id),numel(t)-1);
+			ind  = find(~ops.exclude_id);
+			for ii = 1:size(spks,1)
+				spks(ii,:) = histcounts(data.spikes{ind(ii)},t);
+			end
+			writeNPY(spks,'mat/spks.npy');
+
+			% run rastermap sort
+			system('python helpfun/sort_rastermap.py');
+			% read rastermap result
+			cell_order.ordered_id = ind(readNPY('mat/sorted_rastermap.npy')+1);
+			cell_order.ordered_div = [0 numel(cell_order.ordered_id)];
+			cell_order.cell_cat_name = {'all'};
+
+		end
+
 		function cell_order = non_zero_coef(data,ops)
 			% run classifier
 			if ~isfield(ops,'Mdl')

@@ -7,6 +7,10 @@ classdef common_t < handle
 			t = max([data.rewards.all.rear(end) data.rewards.all.front(end)]);
 		end
 
+		function t = first_reward(data)
+			t = min([data.rewards.all.rear(1) data.rewards.all.front(1)]);
+		end
+
 
 		function t = first_laser(data)
 			

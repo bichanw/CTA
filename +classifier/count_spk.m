@@ -150,7 +150,12 @@ classdef count_spk < handle
 			bin_width = diff(ops.tp); 
 
 			% save temporary file for skipping counting spikes
-			f_spk = sprintf('mat/bin_%.1f_step_%.1f_%s_%s.mat',diff(ops.tp),diff(posterior_t_edges(1:2)),data.subject,datestr(data.session,'YYmmdd'));
+			tmp = diff(posterior_t_edges(1:2));
+			if any(tmp == [0.1 0.5 1]) % need this if because previously only saved 1 decimal
+				f_spk = sprintf('mat/bin_%.1f_step_%.1f_%s_%s.mat',diff(ops.tp),diff(posterior_t_edges(1:2)),data.subject,datestr(data.session,'YYmmdd'));
+			else
+				f_spk = sprintf('mat/bin_%.1f_step_%.2f_%s_%s.mat',diff(ops.tp),diff(posterior_t_edges(1:2)),data.subject,datestr(data.session,'YYmmdd'));
+			end
 
 			% load file
 			if exist(f_spk) && ((nargin < 3) || ~recalculate)
@@ -173,10 +178,11 @@ classdef count_spk < handle
 					for ii = 1:numel(data.spikes)
 						[spk_count(ii,:),edges] = histcounts(data.spikes{ii},[posterior_t_edges posterior_t_edges(end)+posterior_t_edges(2)-posterior_t_edges(1)]);
 					end
-					t = ops.posterior_t_edges(1:end-1) + bin_width / 2;
+					t = ops.posterior_t_edges + bin_width / 2;
 				else
 					for ii = 1:numel(data.spikes)
-						[~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
+						% [~,spk_count(ii,:),~,t] = running_average(data.spikes{ii},[],diff(ops.tp),[],posterior_t_edges); 
+						[spk_count(ii,:),t] = hist_overlap(data.spikes{ii},diff(ops.tp),posterior_t_edges);
 					end
 				end
 				save(f_spk,'spk_count','t','bin_width');

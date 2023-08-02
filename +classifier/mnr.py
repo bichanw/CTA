@@ -18,7 +18,7 @@ C = 1 / float(mat_contents['ops'][0]['mnr'][0]['lambda'][0][0][0][0])
 # try:
 clf = LogisticRegression(penalty=penalty,
 						 C=C,
-						 max_iter=1e4,
+						 max_iter=int(1e4),
 						 solver='liblinear').fit(X,Y)
 # except ValueError as ME:
 	# print('Error ')

@@ -1,4 +1,4 @@
-function [ops,resp,resp_err] = laser_posterior(data,ops,prefix)
+function [ops,resp,resp_err,tbin] = laser_posterior(data,ops,prefix)
 
 % initiation
 if nargin < 3
@@ -42,11 +42,10 @@ for iplot = 1:size(resp,1)
 end
 align_ax(ax,true,true);
 
+% tick legend
 set(ax(3),'XLim',tbin([1 end]),'XTick',[0 1.5 3]);
 ax(3).XTickLabel(ax(3).XTick==0) = {'onset'}; 
 ax(3).XTickLabel(ax(3).XTick==3) = {'offset'};
-
-
 tmp = {'novel','fam'}; legend(ax(1),[h(1).h_m h(2).h_m],tmp(data.port_is_water+1),'box','off');
 xlabel(ax(3),'time (s)'); ylabel(ax(3),'average posteior');
 

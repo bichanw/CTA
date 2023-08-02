@@ -30,7 +30,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 			ops.novel_vs_fam.ordered_color = [data.port_color; 0 0 0];
 			for jj = 1:(numel(ops.novel_vs_fam.ordered_div)-1)
 				plt.raster2(tmp((ops.novel_vs_fam.ordered_div(jj)+1):(ops.novel_vs_fam.ordered_div(jj+1))),...
-								[],[],ax,ops.novel_vs_fam.ordered_div(jj),'Color',ops.novel_vs_fam.ordered_color(jj,:)); 
+								[],[],ax,ops.novel_vs_fam.ordered_div(jj),'Color',ops.novel_vs_fam.ordered_color(jj,:),'LineWidth',0.1); 
 			end
 		end
 
@@ -60,11 +60,11 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 	legend(Axes(2),h,{'novel','water','CGRP'},'Location','northeastoutside');
 	set(gcf,'Position',[0 0 600 250]);
 	set(Axes(1),'XLim',Tois(1,:),'XTick',[],...
-			'YLim',[-h_posterior-1 numel(spk_2_plt)+0.5],...
+			'YLim',[-h_posterior-1 numel(spk_2_plt)+0.5],'YDir','reverse',...
 			'YTick',ytick_loc,'YTickLabel',{'posterior',sprintf('\\color[rgb]{%f,%f,%f}Novel',data.port_color(1,:)),sprintf('\\color[rgb]{%f,%f,%f}Water',data.port_color(2,:)),'Non-selective'},'YTickLabelRotation',90);
 	set(Axes(2),'XLim',Tois(2,:),'XTick',[],...
 			'YLim',[-h_posterior-1 numel(spk_2_plt)+0.5],...
-			'YTick',[]);
+			'YTick',[],'YDir','reverse');
 	Axes(2).YAxis.Visible = 'off';		
 
 	Axes(1).Position = [0.1300    0.1100    0.3347    0.8150];
