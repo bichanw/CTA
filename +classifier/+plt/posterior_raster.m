@@ -36,7 +36,7 @@ end
 
 
 % order cells for plotting raster
-switch 3
+switch 4
 case 1 % sort by ranksum
 	if ~isfield(ops,'novel_vs_fam') || ~isfield(ops.novel_vs_fam,'ordered_id')
 		ops = classifier.select_cells.novel_vs_fam(data,ops);
@@ -48,6 +48,9 @@ case 2 % sort by coefficient
 case 3
 	ops.novel_vs_fam = classifier.select_cells.by_rastermap(data,ops);
 	prefix = [prefix 'rastermap_'];
+case 4 % just use chris's cluster assignments
+	ops.novel_vs_fam = classifier.select_cells.by_chris(data,ops);
+	prefix = [prefix 'allcells_'];
 end
 spk_2_plt = data.spikes(ops.novel_vs_fam.ordered_id);
 ytick_loc = [-2.5 (ops.novel_vs_fam.ordered_div(1:end-1)+ops.novel_vs_fam.ordered_div(2:end))/2];
@@ -57,8 +60,10 @@ ytick_loc = [-2.5 (ops.novel_vs_fam.ordered_div(1:end-1)+ops.novel_vs_fam.ordere
 % plot initiation
 t_step  = 100;
 t_start = min(ops.posterior_t):t_step:max(ops.posterior_t);
-h_posterior = numel(spk_2_plt)/6; % height of posterior traces
+h_posterior = numel(spk_2_plt)/7; % height of posterior traces
 max_ax = 1;
+
+% save('figures/280.mat'); return
 for ibatch = 1:ceil(numel(t_start)/max_ax)
 	ax = np(max_ax,1);
 
@@ -68,7 +73,8 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		toi = [0 t_step]+t_start(ii)+(ibatch-1)*t_step*ii;
 		% convolve raw spikes and average
 		tmp = cellfun(@(x) x(find(x>toi(1) & x<toi(2))) , spk_2_plt,'UniformOutput',false);
-		switch 'smooth_bw'
+		FR  = cellfun(@(x) numel(x), tmp); % spike count for sorting
+		switch 'lines'
 		case 'smooth_bw'
 			% same color
 			plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',300); 
@@ -79,6 +85,16 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 				plt.raster_smooth(tmp((ops.novel_vs_fam.ordered_div(jj)+1):(ops.novel_vs_fam.ordered_div(jj+1))),...
 								toi,ax(ii),'dy',ops.novel_vs_fam.ordered_div(jj),'kernel_width',300,'base_color',ops.novel_vs_fam.ordered_color(jj,:,:)); 
 			end
+		case 'lines'
+			ops.novel_vs_fam.ordered_color = [data.port_color; 0 0 0];
+			for jj = 1:(numel(ops.novel_vs_fam.ordered_div)-1)
+				% plt.raster2(spks_in_toi((ops.novel_vs_fam.ordered_div(jj)+1):(ops.novel_vs_fam.ordered_div(jj+1))),...
+				% 				[],[],ax,ops.novel_vs_fam.ordered_div(jj),'MarkerEdgeColor',ops.novel_vs_fam.ordered_color(jj,:),'MarkerFaceColor',ops.novel_vs_fam.ordered_color(jj,:),'LineWidth',0.3); 
+				cells_2_plt = (ops.novel_vs_fam.ordered_div(jj)+1):(ops.novel_vs_fam.ordered_div(jj+1));
+				[~,I] = sort(FR(cells_2_plt));
+				plt.raster2(tmp(cells_2_plt(I)),...
+								[],[],ax,ops.novel_vs_fam.ordered_div(jj),'MarkerEdgeColor',ops.novel_vs_fam.ordered_color(jj,:),'MarkerFaceColor',ops.novel_vs_fam.ordered_color(jj,:),'LineWidth',0.3); 
+			end
 		end
 
 		
@@ -88,7 +104,7 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		arrayfun(@(ii) set(h(ii),'Color',data.port_color(ii,:)), 1:2);
 		% h(2-data.port_is_water(2)).Color = [1 0 0]; h(2-data.port_is_water(1)).Color = [0 0 0]; 
 		if numel(h)>2 
-			h(3).Color(4) = 0.5;h(3).LineWidth = 0.7;
+			h(3).Color = [0 0 0 0.5]; h(3).LineWidth = 0.7;
 		end
 
 
@@ -112,8 +128,8 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 	% change x axis to progress in time
 	set(gcf,'Position',[0 0 800 250*max_ax]);
 	arrayfun(@(i) set(ax(i),'XLim',[0 t_step]+t_start(i)+(ibatch-1)*t_step*max_ax,...
-							'YLim',[-h_posterior-1 numel(spk_2_plt)+0.5],...
-				            'YTick',ytick_loc,'YTickLabel',['posterior',ops.novel_vs_fam.cell_cat_name]), 1:numel(ax))
+							'YLim',[-h_posterior* 1.2 numel(spk_2_plt)+0.5],...
+				            'YTick',ytick_loc,'YTickLabel',['posterior',ops.novel_vs_fam.cell_cat_name],'YDir','reverse'), 1:numel(ax))
 
 	% save figure
 	export_fig(sprintf('results/%sposterior_raster_coef_%s_%s_%d.pdf',prefix,data.subject,datestr(data.session,'yymmdd'),ibatch));

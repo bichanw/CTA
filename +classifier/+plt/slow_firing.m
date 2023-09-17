@@ -67,7 +67,8 @@ end
 if nargout > 1
 	% select time points within period of interest
 	% not rebinning spike count, which is much less efficient; current margin of error small anyway
-	t_2_plot = [10 30 45]; % how many data points to take
+	% t_2_plot = [10 30 45]; % how many data points to take
+	t_2_plot = [15 30 45]; % how many data points to take
 	t_partition = [common_t.last_reward(data) common_t.first_laser(data)];
 	bin_width = 60; step_size = 30;
 
@@ -78,9 +79,16 @@ if nargout > 1
 					  		hist_overlap(ops.posterior_t(locs{ii}),bin_width,[(t_partition(2)):step_size:(t_partition(2)+t_2_plot(3)*60-bin_width)])};
 	end
 
+	% also save all peaks time points after CGRP starts
+	for ii = 1:2
+		to_save.t_peak{ii} = ops.posterior_t(locs{ii}) - common_t.first_laser(data);
+		to_save.t_peak{ii} = to_save.t_peak{ii}(to_save.t_peak{ii} > 0);
+	end
+
 	% switch novel to first 
 	if data.port_is_water(1)
 		to_save.npeaks = to_save.npeaks([2 1],:);
+		to_save.t_peak = to_save.t_peak([2 1]);
 	end
 
 	% save parameters

@@ -12,7 +12,7 @@ ops.amplitude_cat = {'novel','water','neither'}; % categories of clusters to inc
 ops.amplitude_cutoff = getOr(ops,'amplitude_cutoff',20);
 if ops.amplitude_cutoff >= 0 % amplitude cutoff
 	ops.exclude_method = {'amplitude'};
-	load(sprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV_FDR1pct.mat',data.subject,ops.amplitude_cutoff))
+	load(sprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV_FDR5pct_10sec.mat',data.subject,ops.amplitude_cutoff))
 	include_id = [];
 	for icat = 1:numel(ops.amplitude_cat)
 		include_id = [include_id, cluster_assignments.(ops.amplitude_cat{icat})];

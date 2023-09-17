@@ -1,4 +1,4 @@
-function [ops,resp,resp_err,tbin] = laser_posterior(data,ops,prefix)
+function [ops,resp,resp_err,tbin,raw_data] = laser_posterior(data,ops,prefix)
 
 % initiation
 if nargin < 3
@@ -27,7 +27,7 @@ if isstruct(data.laser)
 	error('need to add onsets / offsets conversion');
 else
 	% onset and offset (plot all 3)
-	[resp(1,:,:),resp_err(1,:,:),tbin] = psth_time_series(Posterior,data.laser(1:100,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
+	[resp(1,:,:),resp_err(1,:,:),tbin,raw_data] = psth_time_series(Posterior,data.laser(1:100,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 	[resp(2,:,:),resp_err(2,:,:),tbin] = psth_time_series(Posterior,data.laser(end-99:end,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 	[resp(3,:,:),resp_err(3,:,:),tbin] = psth_time_series(Posterior,data.laser(:,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 end

@@ -5,6 +5,7 @@ classdef select_cells < handle
 	% by cell
 	methods (Static)
 
+
 		function ops = non_zero_zscore(ops)
 			ind_all = find(~ops.exclude_id);
 			ind_exlcude = find(logical(sum(ops.zscore_by_time.V==0,1)));
@@ -38,6 +39,40 @@ classdef select_cells < handle
 			% compress for easier processing
 			if numel(ind)==1  ind = ind{1};  end
 
+		end
+
+		function cell_order = by_chris(data,ops)
+			% categorize cells by chris's method
+			load(sprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV_FDR5pct_10sec.mat',data.subject,ops.amplitude_cutoff));
+
+			% find included cells
+			ind  = find(~ops.exclude_id);
+
+			% find order within each category
+			ordered_id  = [];
+			ordered_div = 0;
+			% ordered_id needs to be front vs back
+			events_oi   = {data.rewards.all.front,data.rewards.all.rear,[data.cues.rewarded.front; data.cues.rewarded.rear]};
+			cells_oi = arrayfun(@(ii) cluster_assignments.(ops.amplitude_cat{ii}), 1:numel(ops.amplitude_cat),'uni',0);
+			cells_oi(1:2) = cells_oi(data.port_is_water+1);
+
+			for ii = 1:numel(ops.amplitude_cat)
+				% find cells
+				tmp = find(ismember(data.cids,cluster_assignments.(ops.amplitude_cat{ii})));
+				% rank by peak skipped for the moment?
+				if ii < 3
+					tmp = tmp(classifier.select_cells.rank_by_peak(data.spikes(tmp),events_oi{ii},ops));
+				else
+					tmp = tmp(randperm(numel(tmp),10)); % select 10 control cells
+				end
+				ordered_id  = [ordered_id; tmp];
+				ordered_div = [ordered_div ordered_div(end)+numel(tmp)];
+			end
+
+			% output
+			cell_order.ordered_id  = ordered_id;
+			cell_order.ordered_div = ordered_div;
+			cell_order.cell_cat_name = {'front','back','control'};
 		end
 
 		function cell_order = by_rastermap(data,ops)

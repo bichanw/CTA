@@ -25,7 +25,7 @@ spks = zscore(spks, axis=1)
 # # which neurons in the recording are pyramidal cells
 # pyr_cells = dat["pyr_cells"].astype("int")
 
-model = Rastermap(n_clusters=None, # None turns off clustering and sorts single neurons 
+model = Rastermap(n_clusters=3, # None turns off clustering and sorts single neurons 
                   n_PCs=64, # use fewer PCs than neurons
                   locality=0.15, # some locality in sorting (this is a value from 0-1)
                   time_lag_window=15, # use future timepoints to compute correlation

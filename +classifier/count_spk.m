@@ -109,7 +109,7 @@ classdef count_spk < handle
 			ops.tp      = getOr(ops,'tp',[0.1 0.7]);
 			ops.events  = getOr(ops,'events',{'front','rear','precue'});; % ops.events  = 
 			events_oi   = {data.rewards.all.front,data.rewards.all.rear,[data.cues.rewarded.front; data.cues.rewarded.rear]};
-
+			
 			% make sure only count spikes before cue onset
 			t_precue = -flip(ops.tp);
 			if t_precue(1,2) > 0
@@ -151,7 +151,7 @@ classdef count_spk < handle
 
 			% save temporary file for skipping counting spikes
 			tmp = diff(posterior_t_edges(1:2));
-			if any(tmp == [0.1 0.5 1]) % need this if because previously only saved 1 decimal
+			if any((abs([0.1 0.5 1]-tmp))<1e-5) % need this if because previously only saved 1 decimal
 				f_spk = sprintf('mat/bin_%.1f_step_%.1f_%s_%s.mat',diff(ops.tp),diff(posterior_t_edges(1:2)),data.subject,datestr(data.session,'YYmmdd'));
 			else
 				f_spk = sprintf('mat/bin_%.1f_step_%.2f_%s_%s.mat',diff(ops.tp),diff(posterior_t_edges(1:2)),data.subject,datestr(data.session,'YYmmdd'));
@@ -172,6 +172,7 @@ classdef count_spk < handle
 
 			% count spikes again
 			else
+				fprintf('recounting spikes for %s\n',f_spk);
 				% use histcount for efficiency
 				spk_count = NaN(numel(data.spikes),numel(posterior_t_edges));
 				if bin_width == (posterior_t_edges(2)-posterior_t_edges(1))
