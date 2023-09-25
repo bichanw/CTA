@@ -62,13 +62,16 @@ for iSession = 1:numel(Sessions.subject)
 		% prefix = 'testremove_';
 
 		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
-		[ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
+		% [ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
 		% ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:)] = classifier.plt.laser_posterior(data,ops,prefix);
+		ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:,:)] = classifier.plt.drinking_posterior(data,ops,prefix);
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
 		% return
 	end
-	% classifier.plt.cv(data,ops,prefix);
+	% return
+	fprintf('%d session, front is %s\n',iSession,data.ports.front);
+	% to_save(iSession).cv_results = classifier.plt.cv(data,ops,prefix);
 	% return
 end
 
@@ -77,10 +80,12 @@ saveops(ops);
 % return
 
 if exist('to_save')
-	save(sprintf('mat/decoders_peaks_bin%d_step%d.mat',to_save(1).bin_width,to_save(1).step_size),'to_save');
+	% save(sprintf('mat/decoders_peaks_bin%d_step%d.mat',to_save(1).bin_width,to_save(1).step_size),'to_save');
+	save(sprintf('mat/%s.mat',datestr(now,'YYmmdd')),'to_save');
 end
 if exist('resp')
-	save('figures/0.15.mat','resp','resp_err','tbin','raw_data');
+	save(sprintf('mat/%s.mat',datestr(now,'YYmmdd')),'resp','resp_err','tbin','raw_data');
+	% save('figures/0.15.mat','resp','resp_err','tbin','raw_data');
 end
 
 % append_script(['results/' prefix],true);

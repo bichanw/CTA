@@ -1,4 +1,4 @@
-function cv(data,ops,prefix)
+function cv_results = cv(data,ops,prefix)
 % cross validation to justify result
 
 % initiation
@@ -30,14 +30,14 @@ for jj = 1:numel(Lambdas)
 	ops.mnr.lambda = Lambdas(jj);
 
 	% LL for 10 fold
-	[~,cv] = classifier.CV_bw(X,Y,n_fold,ops);
-	LL(jj,:,:) = cv.LL;
+	[~,cv_results(jj)] = classifier.CV_bw(X,Y,n_fold,ops);
+	LL(jj,:,:) = cv_results(jj).LL;
 
 
 	% for ii = 1:n_repeat
-		% [cost(ii),cv] = classifier.CV_bw(X,Y,10,ops);
-		% predicted(ii,:) = cv.post_label;
-		% valid(ii) = sum(~isnan(cv.post_label)) / n_sample;
+		% [cost(ii),cv_results] = classifier.CV_bw(X,Y,10,ops);
+		% predicted(ii,:) = cv_results.post_label;
+		% valid(ii) = sum(~isnan(cv_results.post_label)) / n_sample;
 	% end
 end
 

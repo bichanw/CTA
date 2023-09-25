@@ -2,6 +2,103 @@
 % general figure setting
 Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 
+
+% extended figure, log likelihood results
+	load('mat/230923.mat');
+	clear M V;
+	for jj = 1:numel(to_save)
+		M(jj,:) = arrayfun(@(ii) mean(to_save(jj).cv_results(ii).LL(:,2)), 1:numel(to_save(jj).cv_results));
+		% V = arrayfun(@(ii) std(to_save(jj).cv_results(ii).LL(:,2)), 1:numel(to_save(jj).cv_results));
+		% errorbar(ax,1:numel(to_save(jj).cv_results),M,V,'o-','Color',[0 0 0],'LineWidth',1);
+		% errorbar(ax,-4:4,M,V,'o-','LineWidth',1);
+	end
+	V = std(M,[],1);
+	M = mean(M,1);
+	ax = np;
+	errorbar(ax,-4:4,M,V,'o-k','LineWidth',1);
+	set(ax,'FontSize',8,'XLim',[-4.5 4.5],'XTick',[-4 0 4],'XTickLabel',{'10^{-4}','10^0','10^{4}'});
+	% ylim([-120 0]);
+	xlabel(ax,'\lambda','FontSize',11);
+	ylabel(ax,'test LL','FontSize',11);
+	set(gcf,'Position',[0 0 150 100]);ef;
+	ef;
+% extended figure, confusion matrix
+	label = [];
+	for jj = 1:numel(to_save)
+		label = [label; to_save(jj).cv_results(5).true_label, to_save(jj).cv_results(5).post_label];
+	end
+	N = histcounts2(label(:,1),label(:,2));
+	N = N ./ sum(N,2);
+
+
+	ax = np;
+	% need to use histcounts 2 and calculate probability
+	imagesc(ax,1:3,1:3,N,[0 1]);
+	cmap = cbrewer2('Reds'); cmap(1,:) = 1; colormap(cmap);
+	c = colorbar; c.Label.String = 'classification frequency';
+	set(ax,'FontSize',8,'XLim',[0.5 3.5],'YLim',[0.5 3.5],...
+				'XTick',[1:3],'XTickLabel',{'novel','water','baseline'},...
+				'YTick',[1:3],'YTickLabel',{'novel','water','baseline'},'YDir','reverse');
+	xlabel(ax,'predicted','FontSize',11,'FontWeight','bold');
+	ylabel(ax,'true','FontSize',11,'FontWeight','bold');
+	set(gcf,'Position',[0 0 150 110]);
+	ef;
+% extended figure, posterior locked to drinking
+	load('mat/230925_3s.mat');
+	tbin = tbin + 0.5; 
+	close all; clear ax;
+	ax(1) = subplot(2,2,1,'NextPlot','add','FontSize',8);
+	ax(2) = subplot(2,2,2,'NextPlot','add','FontSize',8);
+	% move by 2/bin (if we're still using 1 s window for the binning)
+	% 280
+	for jj = 1:2
+		for ii = 1:2
+			M = squeeze(resp(2,jj,:,ii));
+			V = squeeze(resp_err(2,jj,:,ii));
+			fill(ax(jj),[tbin flip(tbin)],[M+V; flip(M-V)],Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none');
+			plot(ax(jj),tbin,M,'Color',Colors(ii,:),'LineWidth',2);
+		end
+	end
+	% done with this section
+
+	% averaged across all 180 drinking events
+	ax(3) = subplot(2,2,3,'NextPlot','add','FontSize',8);
+	ax(4) = subplot(2,2,4,'NextPlot','add','FontSize',8);
+	cla(ax(3)); cla(ax(4));
+	for ievent = 1:2
+		for iPost = 1:2
+			t = cat(2,raw_data(:,ievent,:).t) + 0.5;
+			sig_oi = catcell(arrayfun(@(s) s.sig_oi(iPost,:),raw_data(:,ievent,:),'uni',0),2);
+			[M,~,~,tbin2,V] = running_average(t(:),sig_oi(:),0.15,0.15);
+			fill(ax(ievent+2),[tbin2 flip(tbin2)],[M+V; flip(M-V)],Colors(iPost,:),'FaceAlpha',0.1,'EdgeColor','none');
+			plot(ax(ievent+2),tbin2,M,'Color',Colors(iPost,:),'LineWidth',2);
+		end
+	end
+
+	
+	% figure setting
+	arrayfun(@(h) set(h,'XLim',[-5 10]),ax);
+	arrayfun(@(h) set(h,'XTick',[],'YLim',[0 1],'YTick',[0 0.5 1],'YTickLabel',{'0','50','100'}),ax);
+	arrayfun(@(h) set(h,'YTick',[]),ax([2 4]));
+	ylabel(ax(1),'Flavor decoder output (%)','FontSize',11);
+	arrayfun(@(h) set(h,'XTick',-5:5:15), ax([3 4]));
+	xlabel(ax(3),'Time (s)','FontSize',11);
+	title(ax(1),'Drinking novel','FontSize',11);
+	title(ax(2),'Drinking water','FontSize',11);
+	h = text(ax(1),7,0.5,'novel','Color',Colors(1,:),'FontSize',8);
+	h = text(ax(1),7,0.3,'water','Color',Colors(2,:),'FontSize',8);
+
+	ylabel(ax(2),'Example animal','Rotation',0);
+	ylabel(ax(4),'All animals','Rotation',0);
+
+
+
+	set(gcf,'Position',[0 0 330 200]); ef;
+
+	ef;
+
+
+
 % examine firing rate for included neurons
 	% FR = cal_FR(data.spikes(ops.novel_vs_fam.ordered_id));
 	% ax = np; plot(FR);
