@@ -281,7 +281,8 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 		title(ax,{'Average decoder probability','time locked to CGRP stim'},'FontWeight','Normal');
 
 	% time course of peaks
-		load('mat/decoders_peaks_bin60_step30.mat');
+		load('mat/decoders_peaks_bin60_step30.mat');  % main figure version when counting peaks
+		% load('mat/230928.mat'); % another version when counting the start of 0.5 periods
 		clear tmp
 		for ii = 1:2
 			for jj = 1:3

@@ -44,7 +44,9 @@ prefix = [ops.plot.slow_firing_cell '_' prefix];
 
 
 % count posterior peaks
-[~,locs] = arrayfun(@(ii) findpeaks(Posterior(:,ii),'MinPeakHeight',0.5), 1:2, 'UniformOutput',false);
+% [~,locs] = arrayfun(@(ii) findpeaks(Posterior(:,ii),'MinPeakHeight',0.5), 1:2, 'UniformOutput',false);
+[~,locs] = arrayfun(@(ii) consecutive_periods(Posterior(:,ii)>0.5), 1:2, 'UniformOutput',false);
+% counting consecutive periods 
 [~,npeaks] = running_average(ops.posterior_t(locs{1}),[],bin_width,[],slow_edges);
 [~,npeaks(:,end+1)] = running_average(ops.posterior_t(locs{2}),[],bin_width,[],slow_edges);
 
