@@ -3,6 +3,62 @@
 Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 
 
+% tmp figure averaged CGRP
+	% load('figures/0.15.mat'); % v0: 0.15 s binning
+	load('mat/231002.mat'); % v1: use left time to label spike count as well
+	% actual plot
+	% tbin = tbin + 0.5; 
+	close all; clear ax;
+	ax(1) = subplot(2,1,1,'NextPlot','add','FontSize',11);
+	% move by 2/bin (if we're still using 1 s window for the binning)
+	% 280
+	M = squeeze(resp(2,3,:,:));
+	V = squeeze(resp_err(2,3,:,:));
+	arrayfun(@(ii) plot(ax,tbin,M(:,ii),'Color',Colors(ii,:),'LineWidth',2), 1:2);
+	% add shade
+	% arrayfun(@(ii) fill(ax,[tbin flip(tbin)],[M(:,ii)+V(:,ii); flip(M(:,ii)-V(:,ii))],Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none'), 1:2);
+	fill(ax,[tbin flip(tbin)],[M(:,1); flip(M(:,2))],Colors(1,:),'FaceAlpha',0.1,'EdgeColor','none');
+	fill(ax,[tbin flip(tbin)],[M(:,2); zeros(size(M(:,2)))],Colors(2,:),'FaceAlpha',0.1,'EdgeColor','none');
+	% mark laser
+	y = 0.83;
+	h = plot(ax,[0 3],[1 1]*y,'LineWidth',2.5,'Color',Colors(3,:));
+
+	% averaged across all subjcts
+	ax(2) = subplot(2,1,2,'NextPlot','add','FontSize',11);
+	bin_window2 = 0.15;
+	t = cat(1,raw_data(:).t);
+	sig_oi = catcell(arrayfun(@(ii) raw_data(ii).sig_oi(1,:),1:600,'uni',0));
+	[M,~,~,tbin2,V] = running_average(t(:),sig_oi(:),0.15,0.15);
+	sig_oi = catcell(arrayfun(@(ii) raw_data(ii).sig_oi(2,:),1:600,'uni',0));
+	[M(:,end+1),~,~,tbin2,V(:,end+1)] = running_average(t(:),sig_oi(:),bin_window2,bin_window2);
+	arrayfun(@(ii) plot(ax(2),tbin2,M(:,ii),'Color',Colors(ii,:),'LineWidth',2), 1:2);
+	% add shade, either use error or just fill the bottom section
+	% arrayfun(@(ii) fill(ax(2),[tbin2 flip(tbin2)],[M(:,ii)+V(:,ii); flip(M(:,ii)-V(:,ii))],Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none'), 1:2);
+	fill(ax(2),[tbin2 flip(tbin2)]+bin_window2/2,[M(:,1); flip(M(:,2))],Colors(1,:),'FaceAlpha',0.1,'EdgeColor','none');
+	fill(ax(2),[tbin2 flip(tbin2)]+bin_window2/2,[M(:,2); zeros(size(M(:,2)))],Colors(2,:),'FaceAlpha',0.1,'EdgeColor','none');
+	% mark laser
+	y = 0.83;
+	h = plot(ax(1),[0 3],[1 1]*y,'LineWidth',2.5,'Color',Colors(3,:));
+	h = plot(ax(2),[0 3],[1 1]*0.3,'LineWidth',2.5,'Color',Colors(3,:));
+
+	
+	% ax = np; plot(tbin2,R);ef;
+
+	% figure setting
+	arrayfun(@(h) set(h,'XLim',[tbin(1) 3.5]),ax);
+	set(ax(1),'XTick',[],'YLim',[0 y],'YTick',[0 0.8]);
+	set(ax(2),'XTick',[],'YLim',[0 0.3],'YTick',[0 0.3]);
+	ylabel(ax(1),'Example subject');
+	ylabel(ax(2),{'Average','across subjects'});
+	xlabel(ax(2),'Time (s)');
+	set(ax(2),'XTick',[0 1 2 3],'XTickLabel',{'onset','1','2','offset'});
+	title(ax(1),{'Average decoder probability','time locked to CGRP stim'},'FontWeight','Bold');
+	set(gcf,'Position',[0 0 300/2 300]);
+
+	ef;
+	return
+
+	
 % extended figure, log likelihood results
 	load('mat/230923.mat');
 	clear M V;
@@ -204,52 +260,6 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 	% export_fig('fig4h.pdf');
 	export_fig('tmp.pdf');
 	return
-
-% tmp figure averaged CGRP
-	load('figures/0.15.mat');
-	% actual plot
-	close all; clear ax;
-	ax(1) = subplot(2,1,1,'NextPlot','add','FontSize',11);
-	% move by 2/bin (if we're still using 1 s window for the binning)
-	tbin = tbin + 0.5; 
-	% 280
-	M = squeeze(resp(2,3,:,:));
-	V = squeeze(resp_err(2,3,:,:));
-	arrayfun(@(ii) fill(ax,[tbin flip(tbin)],[M(:,ii)+V(:,ii); flip(M(:,ii)-V(:,ii))],Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none'), 1:2);
-	arrayfun(@(ii) plot(ax,tbin,M(:,ii),'Color',Colors(ii,:),'LineWidth',2), 1:2);
-	% mark laser
-	y = 0.83;
-	h = plot(ax,[0 3],[1 1]*y,'LineWidth',2.5,'Color',Colors(3,:));
-
-	% averaged across all 100 activations
-	ax(2) = subplot(2,1,2,'NextPlot','add','FontSize',11);
-	t = cat(1,raw_data(:).t);
-	sig_oi = catcell(arrayfun(@(ii) raw_data(ii).sig_oi(1,:),1:600,'uni',0));
-	[M,~,~,tbin2,V] = running_average(t(:),sig_oi(:),0.15,0.15);
-	sig_oi = catcell(arrayfun(@(ii) raw_data(ii).sig_oi(2,:),1:600,'uni',0));
-	[M(:,end+1),~,~,tbin2,V(:,end+1)] = running_average(t(:),sig_oi(:),0.15,0.15);
-	arrayfun(@(ii) fill(ax(2),[tbin2 flip(tbin2)],[M(:,ii)+V(:,ii); flip(M(:,ii)-V(:,ii))],Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none'), 1:2);
-	arrayfun(@(ii) plot(ax(2),tbin2,M(:,ii),'Color',Colors(ii,:),'LineWidth',2), 1:2);
-	% mark laser
-	y = 0.83;
-	h = plot(ax(1),[0 3],[1 1]*y,'LineWidth',2.5,'Color',Colors(3,:));
-	h = plot(ax(2),[0 3],[1 1]*0.3,'LineWidth',2.5,'Color',Colors(3,:));
-
-	
-	% ax = np; plot(tbin2,R);ef;
-
-	% figure setting
-	arrayfun(@(h) set(h,'XLim',[tbin(1) 3.5]),ax);
-	set(ax(1),'XTick',[],'YLim',[0 y],'YTick',[0 0.8]);
-	set(ax(2),'XTick',[],'YLim',[0 0.3],'YTick',[0 0.3]);
-	ylabel(ax(1),'Example subject');
-	ylabel(ax(2),{'Average','across subjects'});
-	xlabel(ax(2),'Time (s)');
-	set(ax(2),'XTick',[0 1 2 3],'XTickLabel',{'onset','1','2','offset'});
-	title(ax(1),{'Average decoder probability','time locked to CGRP stim'},'FontWeight','Bold');
-	set(gcf,'Position',[0 0 300/2 300]);
-
-	ef;
 
 
 % fig 4i: 

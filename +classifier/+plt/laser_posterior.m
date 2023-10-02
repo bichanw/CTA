@@ -21,6 +21,10 @@ end
 [spk_count,ops] = classifier.count_spk.time_course(data,ops); % count spike after training classifier since the training might remove more cells
 Posterior = ops.classifier.predict(ops.Mdl,spk_count',ops);
 
+% only for this one, use left time to label time bin
+% so the averaged posterior looks causal
+ops.posterior_t = ops.posterior_t_edges + diff(ops.tp)/2;
+
 % time locked to laser onset
 if isstruct(data.laser)
 	% in development
@@ -31,6 +35,9 @@ else
 	[resp(2,:,:),resp_err(2,:,:),tbin] = psth_time_series(Posterior,data.laser(end-99:end,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 	[resp(3,:,:),resp_err(3,:,:),tbin] = psth_time_series(Posterior,data.laser(:,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
 end
+
+% save causal time point as well
+tbin = tbin + bin_width / 2;
 
 Colors = getOr(data,'port_color',[1 0 0; 0 0 0]);
 ax = np(3,1);
