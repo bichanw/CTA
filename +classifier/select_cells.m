@@ -44,7 +44,7 @@ classdef select_cells < handle
 		function cell_order = by_chris(data,ops)
 			% categorize cells by chris's method
 			load(sprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV_FDR5pct_10sec.mat',data.subject,ops.amplitude_cutoff));
-
+			% fprintf('/jukebox/witten/Chris/matlab/cz/neuropixels-cta/bichan/calca%s_clusters_%duV_FDR5pct_10sec.mat',data.subject,ops.amplitude_cutoff);
 			% find included cells
 			ind  = find(~ops.exclude_id);
 
@@ -63,7 +63,18 @@ classdef select_cells < handle
 				if ii < 3
 					tmp = tmp(classifier.select_cells.rank_by_peak(data.spikes(tmp),events_oi{ii},ops));
 				else
-					tmp = tmp(randperm(numel(tmp),10)); % select 10 control cells
+					% subselect control cells
+					FR_response = cal_FR(data.spikes(ordered_id));
+					ind_2_plt = tmp(randperm(numel(tmp),15)); % select 10 control cells
+					FR_control = cal_FR(data.spikes(ind_2_plt));
+					
+					% make sure the firing rates of control cells match the responsive ones
+					while ttest2(FR_response,FR_control)
+						ind_2_plt = tmp(randperm(numel(tmp),15)); % select 10 control cells
+						FR_control = cal_FR(data.spikes(ind_2_plt));
+					end
+					tmp = ind_2_plt;
+					% ax = np(2,1); histogram(ax(1),FR_response,0:1:30); histogram(ax(2),FR_control,0:1:30); title(ax(1),'responsive');title(ax(2),'control');export_fig('ttest2.pdf');
 				end
 				ordered_id  = [ordered_id; tmp];
 				ordered_div = [ordered_div ordered_div(end)+numel(tmp)];

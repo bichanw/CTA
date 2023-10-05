@@ -23,7 +23,7 @@ Posterior = ops.classifier.predict(ops.Mdl,spk_count',ops);
 
 % only for this one, use left time to label time bin
 % so the averaged posterior looks causal
-ops.posterior_t = ops.posterior_t_edges + diff(ops.tp)/2;
+ops.posterior_t = ops.posterior_t + diff(ops.tp)/2;
 
 % time locked to laser onset
 if isstruct(data.laser)

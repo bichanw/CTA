@@ -6,7 +6,7 @@ if nargin < 3
 end
 
 bin_width = 0.15;
-toi       = -5.5:0.05:10;
+toi       = -6:0.05:11;
 
 % count spikes with larger temporal precision
 ops.tp = getOr(ops,'tp',[0 1]);
@@ -20,13 +20,16 @@ if ~isfield(ops,'Mdl')
 end
 [spk_count,ops] = classifier.count_spk.time_course(data,ops); % count spike after training classifier since the training might remove more cells
 Posterior = ops.classifier.predict(ops.Mdl,spk_count',ops);
+ops.posterior_t = ops.posterior_t + diff(ops.tp)/2; % make it causal
 
 % time locked to laser onset
 % onset and offset (plot all 3)
 clear resp resp_err;
 [resp(1,:,:),resp_err(1,:,:),tbin,raw_data] = psth_time_series(Posterior,data.rewards.all.front,ops.posterior_t,'bin_width',bin_width,'toi',toi);
 [resp(2,:,:),resp_err(2,:,:),tbin,raw_data(end+1,:)] = psth_time_series(Posterior,data.rewards.all.rear,ops.posterior_t,'bin_width',bin_width,'toi',toi);
-% [resp(3,:,:),resp_err(3,:,:),tbin] = psth_time_series(Posterior,data.laser(:,1),ops.posterior_t,'bin_width',bin_width,'toi',toi);
+
+% save causal time point as well
+tbin = tbin + bin_width / 2;
 
 % flip if front is water (so first is novel)
 if data.port_is_water(1)
@@ -41,20 +44,20 @@ if data.port_is_water(1)
 end
 
 
-% Colors = [228 45 38; 55 135 192] / 255;
-% close all; clear ax;
-% ax(1) = subplot(1,2,1,'NextPlot','add','FontSize',11);
-% ax(2) = subplot(1,2,2,'NextPlot','add','FontSize',11);
-% % move by 2/bin (if we're still using 1 s window for the binning)
-% % 280
-% for jj = 1:2
-% 	for ii = 1:2
-% 		M = squeeze(resp(jj,:,ii))';
-% 		V = squeeze(resp_err(jj,:,ii))';
-% 		fill(ax(jj),[tbin flip(tbin)]+0.5,[M+V; flip(M-V)],Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none');
-% 		plot(ax(jj),tbin+0.5,M,'Color',Colors(ii,:),'LineWidth',2);
-% 	end
-% end
+Colors = [228 45 38; 55 135 192] / 255;
+close all; clear ax;
+ax(1) = subplot(1,2,1,'NextPlot','add','FontSize',11);
+ax(2) = subplot(1,2,2,'NextPlot','add','FontSize',11);
+% move by 2/bin (if we're still using 1 s window for the binning)
+% 280
+for jj = 1:2
+	for ii = 1:2
+		M = squeeze(resp(jj,:,ii))';
+		V = squeeze(resp_err(jj,:,ii))';
+		fill(ax(jj),[tbin flip(tbin)]+0.5,[M+V; flip(M-V)],Colors(ii,:),'FaceAlpha',0.1,'EdgeColor','none');
+		plot(ax(jj),tbin+0.5,M,'Color',Colors(ii,:),'LineWidth',2);
+	end
+end
 
-% export_fig('tmp.pdf');
+export_fig('tmp.pdf');
 

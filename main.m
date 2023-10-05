@@ -63,8 +63,8 @@ for iSession = 1:numel(Sessions.subject)
 
 		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
 		% [ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
-		ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:)] = classifier.plt.laser_posterior(data,ops,prefix);
-		% ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:,:)] = classifier.plt.drinking_posterior(data,ops,prefix);
+		% ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:)] = classifier.plt.laser_posterior(data,ops,prefix);
+		ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:,:)] = classifier.plt.drinking_posterior(data,ops,prefix);
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
 		% return
