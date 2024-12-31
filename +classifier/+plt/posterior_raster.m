@@ -36,7 +36,7 @@ end
 
 
 % order cells for plotting raster
-switch 4
+switch 1
 case 1 % sort by ranksum
 	if ~isfield(ops,'novel_vs_fam') || ~isfield(ops.novel_vs_fam,'ordered_id')
 		ops = classifier.select_cells.novel_vs_fam(data,ops);
@@ -63,6 +63,7 @@ t_start = min(ops.posterior_t):t_step:max(ops.posterior_t);
 h_posterior = numel(spk_2_plt)/7; % height of posterior traces
 max_ax = 1;
 
+fprintf('plotting %d batches\n',ceil(numel(t_start)/max_ax));
 % save('figures/280.mat'); return
 for ibatch = 1:ceil(numel(t_start)/max_ax)
 	ax = np(max_ax,1);
@@ -74,7 +75,7 @@ for ibatch = 1:ceil(numel(t_start)/max_ax)
 		% convolve raw spikes and average
 		tmp = cellfun(@(x) x(find(x>toi(1) & x<toi(2))) , spk_2_plt,'UniformOutput',false);
 		FR  = cellfun(@(x) numel(x), tmp); % spike count for sorting
-		switch 'lines'
+		switch 'smooth_colored'
 		case 'smooth_bw'
 			% same color
 			plt.raster_smooth(tmp,toi,ax(ii),'kernel_width',300); 

@@ -2,7 +2,14 @@
 results
 mat/
 figures/
-pkgs/
+
+# unused pkgs
+pkgs/flow
+pkgs/100s_46cell_280.jld2
+pkgs/test_code.ipynb
+pkgs/Untitled.ipynb
+pkgs/rastermap
+
 
 # temporary files
 tmp*

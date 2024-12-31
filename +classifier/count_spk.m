@@ -41,7 +41,11 @@ classdef count_spk < handle
 			% count spikes for zscoring based on pre-reward or pre-cgrp activities
 			
 			% partition by time - need the variance from the entire time period
-			[~,zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+			if isfield(data,'laser')
+				[~,zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) common_t.first_laser(data)]);
+			else
+				[~,zscore_by_time] = classifier.count_spk.zscore(data,ops,[common_t.last_reward(data) data.licl]);
+			end
 
 			% calculate baseline for 
 			% 1. drinking period - 1 sec precue
@@ -50,9 +54,14 @@ classdef count_spk < handle
 			zscore_by_time.M(1,:) = mean(count,1);
 			% 2. 2nd context - keep the original
 			% 3. pre-cgrp stim
-			[~,count] = cal_raster(cellfun(@(x) x*1000,data.spikes(~ops.exclude_id),'uni',0), ...
-									data.laser(:,1)*1000, [-1 0] *1000);
-			zscore_by_time.M(3,:) = mean(count,1);
+			if isfield(data,'laser')
+				[~,count] = cal_raster(cellfun(@(x) x*1000,data.spikes(~ops.exclude_id),'uni',0), ...
+										data.laser(:,1)*1000, [-1 0] *1000);
+				zscore_by_time.M(3,:) = mean(count,1);
+			else % if no laser, using baseline from 2nd period, which is in zscore_by_time
+				zscore_by_time.M(3,:) = zscore_by_time.M(2,:);
+			end
+			
 
 
 			% plotting the difference in zscoring method

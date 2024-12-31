@@ -1,13 +1,9 @@
-clear all; clc; close all; addpath('helpfun');
+clearvars -except sessions_oi; clc; close all; addpath('helpfun');
 
-% ----- individual cell plotting ----- %
-% % parameters
-% plt_name = 'FR';
-% extension = 'png';
 
 
 sessions; % initialize sessions to run
-for iSession = 1:numel(Sessions.subject)
+for iSession = sessions_oi
 % for iSession = 2
 
 
@@ -17,54 +13,17 @@ for iSession = 1:numel(Sessions.subject)
 	% parameter section
 	params;
 
-	% ----- individual cell level plot ----- %
-	% % plotting initiation
-	% cells_2_plt = 1:numel(data.spikes); 
-	% N = numel(cells_2_plt);
-	% N_in_batch = 100;
-	% for ibatch = 1:ceil(N/N_in_batch)
-	% 	[ax,r,c] = np(N_in_batch);
-
-	% 	% plot cell by cell
-	% 	for ii = 1:min([N_in_batch N-(ibatch-1)*N_in_batch])
-	% 		eval(['plt.' plt_name '(data,ii+(ibatch-1)*N_in_batch,ax(ii));'])
-	% 	end
-
-	% 	% figure setting
-	% 	eval(['set_fig.' plt_name '(ax(sub2ind([c r],1,r)),data);'])
-		
-	% 	% save
-	% 	export_fig(sprintf('results/%s_%s_%s_%d.%s',plt_name,datestr(data.session,'YYmmdd'),data.subject,ibatch,extension));
-
-	% end
-	% % combine plots
-	% if strcmp(extension,'pdf') append_script(sprintf('results/%s_%s_%s',plt_name,datestr(data.session,'YYmmdd'),data.subject)); end
-
 
 	% ----- session level plot ----- %
-	% classifier.plt.psth(data,struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)));
-	% classifier.plt.raster(data,struct('tp',[0 1],'novel_vs_fam',struct('n_sig',15)));
-	% classifier.plt.cv(data,ops,sprintf('all_%s_',ops.mnr.penalty));
-	% ops = struct('novel_vs_fam',struct('n_sig',15),'posterior_method',2);classifier.plt.posterior_raster(data,[],ops,'chris_thresholded_'); % plot posterior
-	% ops.tp = [0 1]; classifier.plt.dprime(data,ops);
-	% classifier.plt.avg_firing(data,ops);
-	% classifier.plt.slow_firing(data,ops,'');
-	
-
-	% select by brain region
-	% roi = {'CEA'};
-	% ops.exclude_id = getOr(ops,'exclude_id')' | classifier.select_cells.by_brain_region(data,roi);
-
-	% % for lambda = [1e-4 1e-2 1]
 	for lambda = 1
 		ops.mnr.lambda = lambda;
 		prefix = sprintf('amp%d_%dcat_%s_%s_%.1e_',ops.amplitude_cutoff,numel(ops.amplitude_cat),ops.zscore_method,ops.mnr.penalty,ops.mnr.lambda);
 		% prefix = 'testremove_';
 
 		% classifier.plt.posterior_raster(data,[],ops,prefix); % plot posterior
-		% [ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
+		[ops,to_save(iSession)] = classifier.plt.slow_firing(data,ops,prefix);
 		% ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:)] = classifier.plt.laser_posterior(data,ops,prefix);
-		ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:,:)] = classifier.plt.drinking_posterior(data,ops,prefix);
+		% ops.posterior_t_edges = data.video(1):0.15:data.video(end); [ops,resp(iSession,:,:,:),resp_err(iSession,:,:,:),tbin,raw_data(iSession,:,:)] = classifier.plt.drinking_posterior(data,ops,prefix);
 		% classifier.plt.examine_coef(data,ops,prefix);
 		% classifier.plt.brain_region(data,ops,prefix); 
 		% return

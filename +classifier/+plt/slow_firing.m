@@ -66,12 +66,16 @@ end
 
 
 % output to save
-if nargout > 1
+% if nargout > 1
 	% select time points within period of interest
 	% not rebinning spike count, which is much less efficient; current margin of error small anyway
 	% t_2_plot = [10 30 45]; % how many data points to take
 	t_2_plot = [15 30 45]; % how many data points to take
-	t_partition = [common_t.last_reward(data) common_t.first_laser(data)];
+	if isfield(data,'licl')
+		t_partition = [common_t.last_reward(data) data.licl];
+	else
+		t_partition = [common_t.last_reward(data) common_t.first_laser(data)];
+	end
 	bin_width = 60; step_size = 30;
 
 	% better just to recount the peaks, right now npeaks is smaller
@@ -83,7 +87,7 @@ if nargout > 1
 
 	% also save all peaks time points after CGRP starts
 	for ii = 1:2
-		to_save.t_peak{ii} = ops.posterior_t(locs{ii}) - common_t.first_laser(data);
+		to_save.t_peak{ii} = ops.posterior_t(locs{ii}) - t_partition(2);
 		to_save.t_peak{ii} = to_save.t_peak{ii}(to_save.t_peak{ii} > 0);
 	end
 
@@ -107,7 +111,7 @@ if nargout > 1
 	% end
 	% ef;
 
-else
+% else
 
 	% average posterior (don't need this for final figure so putting it here)
 	[avg_post] = running_average(ops.posterior_t,Posterior,bin_width,[],slow_edges);
@@ -140,5 +144,5 @@ else
 				sprintf('n = %d',size(ops.Mdl.coef,1))});
 	export_fig(sprintf('results/%sslow_firing_%s_%s.pdf',prefix,data.subject,datestr(data.session,'YYmmdd')));
 	
-end
+% end
 

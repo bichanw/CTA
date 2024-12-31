@@ -1,0 +1,6 @@
+[submodule "pkgs/export_fig"]
+	path = pkgs/export_fig
+	url = https://github.com/altmany/export_fig
+[submodule "pkgs/cbrewer2"]
+	path = pkgs/cbrewer2
+	url = https://github.com/scottclowe/cbrewer2
