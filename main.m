@@ -54,23 +54,3 @@ return
 
 
 
-
-% examine 
-tmp = reshape(catcell(Mdl.DistributionParameters),2,3,110);
-ax = np; imagesc(squeeze(tmp(1,:,:)));colorbar;ef;
-
-% examine if amplitude change
-	% first 5 min vs last 5 min?
-	t_2_cmp = 5 * 60; % 300 s
-
-	% number of spikes available?
-	N = numel(data.spikes);
-	n_spk = [arrayfun(@(ii) sum(data.spikes{ii}<data.video(1)+t_2_cmp), 1:N)',...
-			 arrayfun(@(ii) sum(data.spikes{ii}>=data.video(end)-t_2_cmp), 1:N)'];
-
-	% send report
-	fprintf('Session %s_%s\n',datestr(data.session,'YYmmdd'),data.subject);
-	fprintf('Start video frame %.1f s, end video frame %.1f s, time of interest %d sec.\n',data.video(1),data.video(end),t_2_cmp);
-	arrayfun(@(ii) fprintf('Cell %d available spikes: %d, %d\n',ii,n_spk(ii,1),n_spk(ii,2)), 1:numel(data.spikes));
-
-

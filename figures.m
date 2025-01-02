@@ -7,7 +7,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 
 
 % new fig extended fig 8: control vs. CGRP ablation
-	load('mat/240815.mat');
+	load('figures/240815.mat');
 	Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 	clear tmp
 	for ii = 1:2
@@ -140,7 +140,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 
 
 % extended figure 8d, posterior locked to drinking
-	load('mat/231003.mat');
+	load('figures/231003.mat');
 	close all; clear ax;
 	ax(1) = subplot(2,2,1,'NextPlot','add','FontSize',8);
 	ax(2) = subplot(2,2,2,'NextPlot','add','FontSize',8);
@@ -203,7 +203,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 
 % fig 4h: averaged CGRP
 	% load('figures/0.15.mat'); % v0: 0.15 s binning
-	load('mat/231003_cgrp.mat'); % v1: use right time to label averaing traces as well
+	load('figures/231003_cgrp.mat'); % v1: use right time to label averaing traces as well
 	% actual plot
 	% tbin = tbin + 0.5; 
 	close all; clear ax;
@@ -267,7 +267,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 
 
 % extended figure 4c, log likelihood results
-	load('mat/230923.mat');
+	load('figures/230923.mat');
 	clear M V;
 	for jj = 1:numel(to_save)
 		M(jj,:) = arrayfun(@(ii) mean(to_save(jj).cv_results(ii).LL(:,2)), 1:numel(to_save(jj).cv_results));
@@ -287,7 +287,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 	export_fig('tmp.pdf'); 
 
 % extended figure 8e, confusion matrix
-	load('mat/230923.mat');
+	load('figures/230923.mat');
 	label = [];
 	for jj = 1:numel(to_save)
 		label = [label; to_save(jj).cv_results(5).true_label, to_save(jj).cv_results(5).post_label];
@@ -342,7 +342,7 @@ Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
 	title(ax,{'Average decoder probability','time locked to CGRP stim'},'FontWeight','Normal');
 
 % figure 4i: time course of peaks
-	load('mat/decoders_peaks_bin60_step30.mat');  % main figure version when counting peaks
+	load('figures/decoders_peaks_bin60_step30.mat');  % main figure version when counting peaks
 	% load('mat/230928.mat'); % another version when counting the start of 0.5 periods
 	% load('mat/240815.mat'); % ablation experiment, not in paper
 	Colors = [228 45 38;   55 135 192; 54 161 86] / 255; % novel, familiar, CGRP
